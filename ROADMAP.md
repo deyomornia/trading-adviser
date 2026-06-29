@@ -1,5 +1,5 @@
 # Trading Adviser — Roadmap & Status
-_Last updated: Phase 1–6 partial. Claude Code: update this file as steps complete._
+_Last updated: Phase 5 complete (2026-06-29). Claude Code: update this file as steps complete._
 
 ## ✅ Done
 - [x] Phase 1 — Next.js project, navigation, 6 pages, permanent disclaimer
@@ -7,13 +7,13 @@ _Last updated: Phase 1–6 partial. Claude Code: update this file as steps compl
 - [x] Phase 3 (core) — Dashboard shows read-only asset tables
 - [x] Phase 9 (partial) — Data-provider adapter + mock provider
 - [x] Phase 6 — Risk Calculator on the Trade Plan page (math verified)
+- [x] Phase 5 — Signal Engine (EMA-20/50, RSI-14, MACD → 0–100 score + Buy Candidate / Wait / Avoid)
 
 ## ▶️ Recommended next
-- [ ] Phase 5 — Signal Engine (0–100 scoring brain). Needs sample price
-      history (candles) first to compute moving averages, RSI, MACD.
+- [ ] Phase 4 — Asset Detail page (candlestick chart, indicators, signal explanation)
+      Now makes sense: there are real scores to explain.
 
 ## ⬜ Later
-- [ ] Phase 4 — Asset Detail page (candlestick chart, indicators, signal explanation)
 - [ ] Phase 7 — Trade Journal (first feature that needs the database)
 - [ ] Phase 8 — Portfolio view (exposure + concentration warnings)
 - [ ] Database setup — Neon/Supabase (free) to save watchlist, journal, trade plans
