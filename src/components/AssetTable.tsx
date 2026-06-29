@@ -1,4 +1,4 @@
-import type { Asset } from "@/types";
+import type { Asset, SignalVerdict } from "@/types";
 
 function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -6,6 +6,34 @@ function formatPrice(price: number, currency: string) {
     currency,
     maximumFractionDigits: 2,
   }).format(price);
+}
+
+function ScoreBadge({ score }: { score: number }) {
+  const color =
+    score >= 65
+      ? "bg-green-100 text-green-800"
+      : score >= 40
+      ? "bg-amber-100 text-amber-800"
+      : "bg-red-100 text-red-800";
+  return (
+    <span className={`rounded px-2 py-0.5 text-xs font-bold tabular-nums ${color}`}>
+      {score}
+    </span>
+  );
+}
+
+function SignalBadge({ signal }: { signal: SignalVerdict }) {
+  const color =
+    signal === "Buy Candidate"
+      ? "bg-green-100 text-green-800"
+      : signal === "Avoid"
+      ? "bg-red-100 text-red-800"
+      : "bg-amber-100 text-amber-800";
+  return (
+    <span className={`rounded px-2 py-0.5 text-xs font-medium ${color}`}>
+      {signal}
+    </span>
+  );
 }
 
 export default function AssetTable({
@@ -25,9 +53,11 @@ export default function AssetTable({
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500">
               <th className="px-4 py-2 font-medium">Asset</th>
-              <th className="px-4 py-2 font-medium">Type</th>
+              <th className="px-4 py-2 font-medium">Signal</th>
+              <th className="px-4 py-2 font-medium">Score</th>
+              <th className="hidden px-4 py-2 font-medium sm:table-cell">Type</th>
               <th className="px-4 py-2 text-right font-medium">Price</th>
-              <th className="px-4 py-2 text-right font-medium">24h Change</th>
+              <th className="px-4 py-2 text-right font-medium">24h</th>
               <th className="px-4 py-2 text-right font-medium">Data</th>
             </tr>
           </thead>
@@ -43,7 +73,23 @@ export default function AssetTable({
                     <span className="font-medium text-slate-900">{a.name}</span>{" "}
                     <span className="text-slate-400">{a.symbol}</span>
                   </td>
-                  <td className="px-4 py-3 capitalize text-slate-600">{a.type}</td>
+                  <td className="px-4 py-3">
+                    {a.signal ? (
+                      <SignalBadge signal={a.signal} />
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {a.score !== undefined ? (
+                      <ScoreBadge score={a.score} />
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
+                  </td>
+                  <td className="hidden px-4 py-3 capitalize text-slate-600 sm:table-cell">
+                    {a.type}
+                  </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-900">
                     {formatPrice(a.price, a.currency)}
                   </td>
