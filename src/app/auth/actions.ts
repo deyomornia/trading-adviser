@@ -31,7 +31,7 @@ export async function signup(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { emailRedirectTo: `${origin}/auth/callback` },
@@ -41,9 +41,15 @@ export async function signup(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
-  // If "Confirm email" is ON in Supabase, the user must check their inbox.
-  // If it's OFF (dev), they're signed in immediately.
   revalidatePath("/", "layout");
+
+  // If "Confirm email" is OFF, Supabase returns a live session — the user is
+  // already signed in, so send them straight into the app.
+  if (data.session) {
+    redirect("/");
+  }
+
+  // Otherwise "Confirm email" is ON: they must click the link in their inbox.
   redirect("/login?message=Check your email to confirm, then sign in.");
 }
 
