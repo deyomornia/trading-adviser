@@ -1,2 +1,2 @@
-export { scoreAsset } from "./scorer";
-export type { ScoreResult, SignalVerdict } from "./scorer";
+export { scoreAsset, explainScore } from "./scorer";
+export type { ScoreResult, SignalVerdict, ExplanationPoint } from "./scorer";

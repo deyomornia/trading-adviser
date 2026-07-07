@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Asset, SignalVerdict } from "@/types";
 
 function formatPrice(price: number, currency: string) {
@@ -70,8 +71,12 @@ export default function AssetTable({
                   className="border-b border-slate-100 last:border-0"
                 >
                   <td className="px-4 py-3">
-                    <span className="font-medium text-slate-900">{a.name}</span>{" "}
-                    <span className="text-slate-400">{a.symbol}</span>
+                    <Link href={`/assets/${a.symbol}`} className="group">
+                      <span className="font-medium text-slate-900 group-hover:underline">
+                        {a.name}
+                      </span>{" "}
+                      <span className="text-slate-400">{a.symbol}</span>
+                    </Link>
                   </td>
                   <td className="px-4 py-3">
                     {a.signal ? (
