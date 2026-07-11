@@ -17,3 +17,23 @@ export interface Asset {
   signal?: SignalVerdict;  // plain-English verdict (Phase 5)
   stopSuggestion?: number; // recent swing low for stop placement (Phase 5)
 }
+
+// Trade Journal (Phase 7). One record per trade the user logs.
+export type TradeDirection = "long" | "short";
+export type TradeStatus = "open" | "closed";
+
+export interface Trade {
+  id: string;
+  symbol: string;
+  direction: TradeDirection;
+  entry: number;
+  stop_loss: number | null;
+  target: number | null;
+  position_size: number | null;
+  status: TradeStatus;
+  exit: number | null;
+  result: number | null;   // profit/loss once closed
+  notes: string | null;
+  opened_at: string;       // ISO timestamp
+  closed_at: string | null;
+}
