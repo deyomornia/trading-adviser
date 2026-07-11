@@ -1,5 +1,5 @@
 # Trading Adviser — Roadmap & Status
-_Last updated: Phase A complete (2026-07-05). Claude Code: update this file as steps complete._
+_Last updated: Phase 7 complete (2026-07-11). Claude Code: update this file as steps complete._
 
 ## ✅ Done
 - [x] Phase 1 — Next.js project, navigation, 6 pages, permanent disclaimer
@@ -10,14 +10,14 @@ _Last updated: Phase A complete (2026-07-05). Claude Code: update this file as s
 - [x] Phase 5 — Signal Engine (EMA-20/50, RSI-14, MACD → 0–100 score + Buy Candidate / Wait / Avoid)
 - [x] Phase A — Auth + database foundation (Supabase): sign-up/login/logout, protected
       pages, `profiles` table with `tier` field, `canAccess()` helper. Login verified working.
+- [x] Phase 4 — Asset Detail page (candlestick chart, score breakdown, plain-English explanation)
+- [x] Phase 7 — Trade Journal (per-user, saved to Supabase `trades` table; verified end-to-end)
 
 ## ▶️ Recommended next
-- [ ] Phase 4 — Asset Detail page (candlestick chart, indicators, signal explanation)
-      Now makes sense: there are real scores to explain, and logged-in users to show them to.
+- [ ] Phase 8 — Portfolio view (per-user exposure + concentration warnings).
+      Builds on the journal's open trades to show total exposure by asset class.
 
 ## ⬜ Later
-- [ ] Phase 7 — Trade Journal (per-user, saved to Supabase)
-- [ ] Phase 8 — Portfolio view (per-user exposure + concentration warnings)
 - [ ] Phase B — Paywall layer (tighten `canAccess()` + add Stripe) when ready to sell access
 - [ ] Phase 9 (finish) — Wire real Binance (crypto) + Twelve Data (commodities)
 - [ ] Phase 10 — AI explanation layer (explains the signal in plain English)
