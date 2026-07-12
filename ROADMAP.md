@@ -1,11 +1,10 @@
 # Trading Adviser — Roadmap & Status
-_Last updated: Phase 8 complete (2026-07-12). Claude Code: update this file as steps complete._
+_Last updated: Phase 9 mostly complete (2026-07-13). Claude Code: update this file as steps complete._
 
 ## ✅ Done
 - [x] Phase 1 — Next.js project, navigation, 6 pages, permanent disclaimer
 - [x] Phase 2 — Sample crypto + commodity data (clearly labelled SAMPLE)
 - [x] Phase 3 (core) — Dashboard shows read-only asset tables
-- [x] Phase 9 (partial) — Data-provider adapter + mock provider
 - [x] Phase 6 — Risk Calculator on the Trade Plan page (math verified)
 - [x] Phase 5 — Signal Engine (EMA-20/50, RSI-14, MACD → 0–100 score + Buy Candidate / Wait / Avoid)
 - [x] Phase A — Auth + database foundation (Supabase): sign-up/login/logout, protected
@@ -13,12 +12,14 @@ _Last updated: Phase 8 complete (2026-07-12). Claude Code: update this file as s
 - [x] Phase 4 — Asset Detail page (candlestick chart, score breakdown, plain-English explanation)
 - [x] Phase 7 — Trade Journal (per-user, saved to Supabase `trades` table; verified end-to-end)
 - [x] Phase 8 — Portfolio view (per-user exposure by class + concentration warnings; logic verified)
+- [x] Phase 9 (mostly) — LIVE data: BTC/ETH/SOL via Binance (no key) + Gold via Twelve Data.
+      Oil + Copper stay SAMPLE (need a paid Twelve Data plan). Provider layer + LIVE/SAMPLE labels done.
 
 ## ▶️ Recommended next
-- [ ] Choose the go-live direction (all core product features are done):
-      • Phase 9 — Real live market data (Binance + Twelve Data) — makes it "real"
+- [ ] Choose the go-live direction:
       • Phase B — Paywall + Stripe — needed before selling access
       • Phase 10 — AI plain-English explanations — extra polish
+      • (Optional) upgrade Twelve Data to make Oil + Copper live too
 
 ## ⬜ Later
 
