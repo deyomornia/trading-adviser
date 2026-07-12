@@ -8,12 +8,14 @@ import type { Candle } from "@/data/sampleCandles";
 const BASE = "https://api.twelvedata.com";
 const REVALIDATE_SECONDS = 900; // 15 min — commodities move slowly, saves quota
 
-// Our symbols → Twelve Data instrument symbols. May need adjusting once we
-// see what the account's plan actually returns (verified when the key is added).
+// Our symbols → Twelve Data instrument symbols.
+// Verified against the free plan: Gold (XAU/USD, priced as forex) works.
+// Crude Oil (WTI) requires a paid Grow/Venture plan, and there is no correct
+// free copper instrument (the bare "HG" ticker is an unrelated stock, not
+// copper), so WTI and HG are intentionally omitted and fall back to SAMPLE
+// rather than show wrong data. Add them here if the plan is upgraded.
 const INSTRUMENTS: Record<string, string> = {
   XAU: "XAU/USD", // Gold spot
-  WTI: "WTI/USD", // Crude Oil (WTI)
-  HG: "XCU/USD",  // Copper spot
 };
 
 export const TWELVE_DATA_SYMBOLS = Object.keys(INSTRUMENTS);
