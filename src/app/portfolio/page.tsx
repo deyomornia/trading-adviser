@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { getTrades } from "@/lib/journal";
+import { getUserTier } from "@/lib/tier";
+import { canAccess } from "@/lib/access";
 import { summarizePortfolio, type AssetClass } from "@/lib/portfolio";
 import { sampleAssets } from "@/data/sampleAssets";
+import UpgradePrompt from "@/components/UpgradePrompt";
 
 function fmt(n: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(n);
@@ -30,17 +33,35 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint?:
 }
 
 export default async function PortfolioPage() {
+  const tier = await getUserTier();
+
+  const header = (
+    <>
+      <h1 className="text-2xl font-semibold text-slate-900">Portfolio</h1>
+      <p className="mt-2 max-w-2xl text-slate-600">
+        Your overall exposure from open trades, your total risk if every stop-loss
+        is hit, and warnings when you are too concentrated in one position.
+      </p>
+    </>
+  );
+
+  // Paid feature: free users see an upgrade prompt instead of the portfolio.
+  if (!canAccess(tier, "portfolio")) {
+    return (
+      <div>
+        {header}
+        <UpgradePrompt feature="The Portfolio view" />
+      </div>
+    );
+  }
+
   const trades = await getTrades();
   const openTrades = trades.filter((t) => t.status === "open");
   const summary = summarizePortfolio(openTrades, typeOf);
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900">Portfolio</h1>
-      <p className="mt-2 max-w-2xl text-slate-600">
-        Your overall exposure from open trades, your total risk if every stop-loss
-        is hit, and warnings when you are too concentrated in one position.
-      </p>
+      {header}
 
       {openTrades.length === 0 ? (
         <p className="mt-8 rounded-lg border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-400">

@@ -1,5 +1,8 @@
 import { getTrades } from "@/lib/journal";
+import { getUserTier } from "@/lib/tier";
+import { canAccess } from "@/lib/access";
 import { addTrade, closeTrade, deleteTrade } from "./actions";
+import UpgradePrompt from "@/components/UpgradePrompt";
 import type { Trade } from "@/types";
 
 function fmt(n: number | null) {
@@ -158,17 +161,35 @@ function ClosedTradeRow({ trade }: { trade: Trade }) {
 }
 
 export default async function JournalPage() {
+  const tier = await getUserTier();
+
+  const header = (
+    <>
+      <h1 className="text-2xl font-semibold text-slate-900">Trade Journal</h1>
+      <p className="mt-2 max-w-2xl text-slate-600">
+        Record every trade — entry, exit, result, and lessons — so you can learn
+        from your own history. Your journal is private to your account.
+      </p>
+    </>
+  );
+
+  // Paid feature: free users see an upgrade prompt instead of the journal.
+  if (!canAccess(tier, "journal")) {
+    return (
+      <div>
+        {header}
+        <UpgradePrompt feature="The Trade Journal" />
+      </div>
+    );
+  }
+
   const trades = await getTrades();
   const open = trades.filter((t) => t.status === "open");
   const closed = trades.filter((t) => t.status === "closed");
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900">Trade Journal</h1>
-      <p className="mt-2 max-w-2xl text-slate-600">
-        Record every trade — entry, exit, result, and lessons — so you can learn
-        from your own history. Your journal is private to your account.
-      </p>
+      {header}
 
       <div className="mt-6">
         <AddTradeForm />

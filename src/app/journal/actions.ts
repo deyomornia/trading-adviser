@@ -6,6 +6,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getUserTier } from "@/lib/tier";
+import { canAccess } from "@/lib/access";
 import type { TradeDirection } from "@/types";
 
 // Turn a form field into a number, or null when blank.
@@ -22,6 +24,9 @@ export async function addTrade(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return; // middleware already blocks this, but be safe
+
+  // Paid feature — don't let a free user create trades by calling this directly.
+  if (!canAccess(await getUserTier(), "journal")) return;
 
   const symbol = String(formData.get("symbol") ?? "").trim().toUpperCase();
   const entry = num(formData.get("entry"));
