@@ -1,4 +1,5 @@
 import type { Asset } from "@/types";
+import type { Candle } from "@/data/sampleCandles";
 import type { DataProvider } from "./provider";
 import { sampleAssets } from "@/data/sampleAssets";
 import { sampleCandles } from "@/data/sampleCandles";
@@ -13,5 +14,8 @@ export const mockProvider: DataProvider = {
       const { score, signal, stopSuggestion } = scoreAsset(candles);
       return { ...asset, score, signal, stopSuggestion };
     });
+  },
+  async getCandles(symbol: string): Promise<Candle[] | null> {
+    return sampleCandles[symbol] ?? null;
   },
 };

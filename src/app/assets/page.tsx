@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { mockProvider } from "@/lib/data-providers/mock";
+import { dataProvider } from "@/lib/data-providers";
 import type { Asset, SignalVerdict } from "@/types";
 
 function formatPrice(price: number, currency: string) {
@@ -28,7 +28,18 @@ function AssetCard({ asset }: { asset: Asset }) {
       <div className="flex items-start justify-between">
         <div>
           <div className="font-medium text-slate-900">{asset.name}</div>
-          <div className="text-sm text-slate-400">{asset.symbol}</div>
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            {asset.symbol}
+            {asset.isSample ? (
+              <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                SAMPLE
+              </span>
+            ) : (
+              <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+                LIVE
+              </span>
+            )}
+          </div>
         </div>
         {asset.signal && (
           <span className={`rounded px-2 py-0.5 text-xs font-medium ${signalColor(asset.signal)}`}>
@@ -58,7 +69,7 @@ function AssetCard({ asset }: { asset: Asset }) {
 }
 
 export default async function AssetIndexPage() {
-  const assets = await mockProvider.getAssets();
+  const assets = await dataProvider.getAssets();
   const crypto = assets.filter((a) => a.type === "crypto");
   const commodities = assets.filter((a) => a.type === "commodity");
 

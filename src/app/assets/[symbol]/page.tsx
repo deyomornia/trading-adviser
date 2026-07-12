@@ -1,15 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { mockProvider } from "@/lib/data-providers/mock";
-import { sampleCandles } from "@/data/sampleCandles";
+import { dataProvider } from "@/lib/data-providers";
 import { scoreAsset, explainScore } from "@/lib/signal-engine";
 import type { SignalVerdict } from "@/types";
 import CandleChart from "@/components/CandleChart";
-
-// Pre-render a page for each known asset symbol.
-export function generateStaticParams() {
-  return Object.keys(sampleCandles).map((symbol) => ({ symbol }));
-}
 
 function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -61,9 +55,11 @@ export default async function AssetDetailPage({
   const { symbol } = await params;
   const sym = symbol.toUpperCase();
 
-  const assets = await mockProvider.getAssets();
+  const [assets, candles] = await Promise.all([
+    dataProvider.getAssets(),
+    dataProvider.getCandles(sym),
+  ]);
   const asset = assets.find((a) => a.symbol === sym);
-  const candles = sampleCandles[sym];
 
   if (!asset || !candles) notFound();
 
@@ -82,9 +78,13 @@ export default async function AssetDetailPage({
           <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold text-slate-900">
             {asset.name}
             <span className="text-lg font-normal text-slate-400">{asset.symbol}</span>
-            {asset.isSample && (
+            {asset.isSample ? (
               <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                 SAMPLE
+              </span>
+            ) : (
+              <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                LIVE
               </span>
             )}
           </h1>
@@ -108,11 +108,18 @@ export default async function AssetDetailPage({
         </div>
       </div>
 
-      {/* SAMPLE reminder */}
-      <div className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-        <strong>SAMPLE data.</strong> This chart and score use placeholder price
-        history for building the app — not live market data.
-      </div>
+      {/* Data-source reminder */}
+      {asset.isSample ? (
+        <div className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong>SAMPLE data.</strong> This chart and score use placeholder price
+          history for building the app — not live market data.
+        </div>
+      ) : (
+        <div className="mt-6 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <strong>LIVE data.</strong> Real market prices and history. This is
+          decision-support only — not financial advice.
+        </div>
+      )}
 
       {/* Chart */}
       <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4">

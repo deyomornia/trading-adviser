@@ -108,9 +108,13 @@ export default function AssetTable({
                     {a.dailyChangePct.toFixed(1)}%
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {a.isSample && (
+                    {a.isSample ? (
                       <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                         SAMPLE
+                      </span>
+                    ) : (
+                      <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                        LIVE
                       </span>
                     )}
                   </td>
