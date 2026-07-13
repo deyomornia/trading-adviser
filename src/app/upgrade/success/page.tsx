@@ -1,47 +1,37 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getStripe, stripeConfigured } from "@/lib/stripe";
+import { paymongoConfigured, isCheckoutPaid, ACCESS_DAYS } from "@/lib/paymongo";
+import { extendAccess } from "@/lib/billing";
 
-// After Stripe Checkout, verify the session server-side and flip the user to
-// "paid" immediately. (The webhook also does this, but syncing here means the
-// upgrade works even in local dev where webhooks aren't wired up.)
-export default async function UpgradeSuccessPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ session_id?: string }>;
-}) {
-  const { session_id } = await searchParams;
+// Always render fresh: this page verifies payment against the user's session.
+export const dynamic = "force-dynamic";
+
+// After PayMongo checkout, verify the remembered session and grant access.
+// (The webhook also does this; syncing here makes it work in local dev too.)
+export default async function UpgradeSuccessPage() {
   let ok = false;
 
-  if (session_id && stripeConfigured()) {
-    try {
-      const stripe = getStripe();
-      const session = await stripe.checkout.sessions.retrieve(session_id, {
-        expand: ["subscription"],
-      });
+  if (paymongoConfigured()) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      const sub = session.subscription as { status?: string } | null;
-      const active = sub?.status === "active" || sub?.status === "trialing";
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("pending_checkout_id, paid_until")
+        .eq("id", user.id)
+        .single();
 
-      if (active) {
-        const supabase = await createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from("profiles")
-            .update({
-              tier: "paid",
-              stripe_customer_id:
-                typeof session.customer === "string" ? session.customer : null,
-            })
-            .eq("id", user.id);
-          ok = true;
-        }
+      const sessionId = profile?.pending_checkout_id;
+      if (sessionId && (await isCheckoutPaid(sessionId))) {
+        await extendAccess(supabase, user.id, ACCESS_DAYS);
+        ok = true;
+      } else if (profile?.paid_until && new Date(profile.paid_until) > new Date()) {
+        // Already granted (e.g. webhook beat us to it).
+        ok = true;
       }
-    } catch {
-      ok = false;
     }
   }
 
@@ -51,7 +41,7 @@ export default async function UpgradeSuccessPage({
         <>
           <h1 className="text-2xl font-semibold text-slate-900">You’re all set 🎉</h1>
           <p className="mt-2 text-slate-600">
-            Your free trial has started and Pro features are unlocked.
+            {ACCESS_DAYS} days of Pro are unlocked. Enjoy the tracking tools.
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Link
@@ -72,8 +62,8 @@ export default async function UpgradeSuccessPage({
         <>
           <h1 className="text-2xl font-semibold text-slate-900">Almost there</h1>
           <p className="mt-2 text-slate-600">
-            We couldn’t confirm your subscription just yet. If you completed
-            checkout, it may take a moment — refresh this page, or check{" "}
+            We couldn’t confirm your payment just yet. If you completed it, give it
+            a moment and refresh — or check{" "}
             <Link href="/upgrade" className="underline">
               your plan
             </Link>

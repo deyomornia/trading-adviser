@@ -1,5 +1,6 @@
-// Reads the logged-in user's subscription tier from their profile.
-// Defaults to "free" if not signed in or on any error.
+// Reads the logged-in user's access tier. Access is time-based: a user is
+// "paid" while their `paid_until` timestamp is in the future (covers both the
+// 7-day trial and paid 30-day periods). Defaults to "free".
 
 import { createClient } from "@/lib/supabase/server";
 import type { Tier } from "@/lib/access";
@@ -13,9 +14,10 @@ export async function getUserTier(): Promise<Tier> {
 
   const { data } = await supabase
     .from("profiles")
-    .select("tier")
+    .select("paid_until")
     .eq("id", user.id)
     .single();
 
-  return data?.tier === "paid" ? "paid" : "free";
+  if (!data?.paid_until) return "free";
+  return new Date(data.paid_until).getTime() > Date.now() ? "paid" : "free";
 }

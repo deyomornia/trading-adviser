@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
-import { stripeConfigured, TRIAL_DAYS } from "@/lib/stripe";
-import { startCheckout, openBillingPortal } from "./actions";
+import { paymongoConfigured, TRIAL_DAYS, ACCESS_DAYS } from "@/lib/paymongo";
+import { startCheckout } from "./actions";
 
 export default async function UpgradePage({
   searchParams,
@@ -10,7 +10,7 @@ export default async function UpgradePage({
 }) {
   const { error, canceled } = await searchParams;
   const tier = await getUserTier();
-  const configured = stripeConfigured();
+  const configured = paymongoConfigured();
 
   return (
     <div className="mx-auto max-w-lg">
@@ -24,17 +24,18 @@ export default async function UpgradePage({
       )}
       {canceled && (
         <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">
-          Checkout canceled — no charge was made.
+          Payment canceled — no charge was made.
         </p>
       )}
 
       <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6">
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-bold text-slate-900">₱499</span>
-          <span className="text-slate-500">/ month</span>
+          <span className="text-slate-500">/ {ACCESS_DAYS} days</span>
         </div>
         <p className="mt-1 text-sm text-emerald-700">
-          Starts with a {TRIAL_DAYS}-day free trial — cancel anytime before it ends.
+          New accounts start with a {TRIAL_DAYS}-day free trial. Pay anytime to add
+          another {ACCESS_DAYS} days.
         </p>
 
         <ul className="mt-5 space-y-2 text-sm text-slate-700">
@@ -43,28 +44,25 @@ export default async function UpgradePage({
           <li>✓ Keep the free Dashboard, Asset Detail, and Trade Plan</li>
         </ul>
 
+        <p className="mt-4 text-xs text-slate-400">
+          Pay with GCash, GrabPay, Maya, or card.
+        </p>
+
         {tier === "paid" ? (
-          <div className="mt-6">
-            <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-              You’re subscribed — thank you! You have full access.
-            </p>
-            {configured && (
-              <form action={openBillingPortal} className="mt-3">
-                <button className="text-sm font-medium text-slate-700 underline">
-                  Manage billing
-                </button>
-              </form>
-            )}
-          </div>
-        ) : configured ? (
-          <form action={startCheckout} className="mt-6">
+          <p className="mt-6 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            You have Pro access right now — thank you! You can add more days anytime below.
+          </p>
+        ) : null}
+
+        {configured ? (
+          <form action={startCheckout} className="mt-4">
             <button className="w-full rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800">
-              Start {TRIAL_DAYS}-day free trial
+              {tier === "paid" ? `Add ${ACCESS_DAYS} more days — ₱499` : "Get Pro — ₱499"}
             </button>
           </form>
         ) : (
           <p className="mt-6 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-500">
-            Payments aren’t connected yet. (Stripe keys pending.)
+            Payments aren’t connected yet. (PayMongo keys pending.)
           </p>
         )}
       </div>
@@ -76,8 +74,9 @@ export default async function UpgradePage({
       </p>
 
       <p className="mt-6 text-xs text-slate-400">
-        This is a decision-support tool, not financial advice. Subscriptions renew
-        monthly until canceled.
+        This is a decision-support tool, not financial advice. Access is granted in
+        {" "}
+        {ACCESS_DAYS}-day periods; it does not auto-renew.
       </p>
     </div>
   );

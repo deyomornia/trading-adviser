@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TRIAL_DAYS } from "@/lib/stripe";
+import { TRIAL_DAYS } from "@/lib/paymongo";
 
 // Shown in place of a paid feature when a free user opens it.
 export default function UpgradePrompt({ feature }: { feature: string }) {
@@ -19,9 +19,11 @@ export default function UpgradePrompt({ feature }: { feature: string }) {
         href="/upgrade"
         className="mt-5 inline-block rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
       >
-        Start {TRIAL_DAYS}-day free trial
+        See Pro — {TRIAL_DAYS}-day free trial
       </Link>
-      <p className="mt-3 text-xs text-slate-400">₱499 / month after the trial</p>
+      <p className="mt-3 text-xs text-slate-400">
+        ₱499 / 30 days · pay with GCash, GrabPay, Maya, or card
+      </p>
     </div>
   );
 }
