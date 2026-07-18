@@ -1,5 +1,5 @@
 # Trading Adviser — Roadmap & Status
-_Last updated: Phase 9 mostly complete (2026-07-13). Claude Code: update this file as steps complete._
+_Last updated: Phase B complete (2026-07-18). Claude Code: update this file as steps complete._
 
 ## ✅ Done
 - [x] Phase 1 — Next.js project, navigation, 6 pages, permanent disclaimer
@@ -14,14 +14,19 @@ _Last updated: Phase 9 mostly complete (2026-07-13). Claude Code: update this fi
 - [x] Phase 8 — Portfolio view (per-user exposure by class + concentration warnings; logic verified)
 - [x] Phase 9 (mostly) — LIVE data: BTC/ETH/SOL via Binance (no key) + Gold via Twelve Data.
       Oil + Copper stay SAMPLE (need a paid Twelve Data plan). Provider layer + LIVE/SAMPLE labels done.
+- [x] Phase B — Paywall via PayMongo (GCash/GrabPay/Maya/card). 7-day trial + ₱499/30-day
+      access (paid_until model). FREE: Dashboard/Asset Detail/Trade Plan; PAID: Journal/Portfolio.
+      Tested end-to-end with test GCash payment.
 
 ## ▶️ Recommended next
-- [ ] Choose the go-live direction:
-      • Phase B — Paywall + Stripe — needed before selling access
-      • Phase 10 — AI plain-English explanations — extra polish
-      • (Optional) upgrade Twelve Data to make Oil + Copper live too
+- [ ] Deploy live to Vercel — put the app on a real URL so it can be used/sold.
+      Needs: Vercel account (free), env vars copied over, NEXT_PUBLIC_SITE_URL set.
 
 ## ⬜ Later
+- [ ] Go-live payments: PayMongo LIVE keys + webhook on the deployed URL (needs PayMongo
+      business approval); switch Supabase email confirmation back ON.
+- [ ] Phase 10 — AI plain-English explanations (needs Claude API key)
+- [ ] (Optional) upgrade Twelve Data plan to make Oil + Copper live
 
 ## Notes
 - v1 scope = crypto + commodities only. PSE stocks deferred (no clean free API).
