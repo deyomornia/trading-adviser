@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { login, signInWithGoogle } from "@/app/auth/actions";
+import { login } from "@/app/auth/actions";
 
 export default async function LoginPage({
   searchParams,
@@ -58,21 +58,6 @@ export default async function LoginPage({
           className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800"
         >
           Sign in
-        </button>
-      </form>
-
-      <div className="my-4 flex items-center gap-3 text-xs text-slate-400">
-        <span className="h-px flex-1 bg-slate-200" />
-        or
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
-
-      <form>
-        <button
-          formAction={signInWithGoogle}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        >
-          Continue with Google
         </button>
       </form>
 

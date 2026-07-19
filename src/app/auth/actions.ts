@@ -53,23 +53,8 @@ export async function signup(formData: FormData) {
   redirect("/login?message=Check your email to confirm, then sign in.");
 }
 
-export async function signInWithGoogle() {
-  const supabase = await createClient();
-  const origin = (await headers()).get("origin");
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${origin}/auth/callback` },
-  });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
-  }
-
-  if (data.url) {
-    redirect(data.url);
-  }
-}
+// Google sign-in is not enabled yet. Add a signInWithGoogle action back here
+// (and the buttons) once the Google provider is configured in Supabase.
 
 export async function signOut() {
   const supabase = await createClient();
