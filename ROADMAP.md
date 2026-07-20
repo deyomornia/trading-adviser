@@ -17,10 +17,15 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 - [x] Phase B — Paywall via PayMongo (GCash/GrabPay/Maya/card). 7-day trial + ₱499/30-day
       access (paid_until model). FREE: Dashboard/Asset Detail/Trade Plan; PAID: Journal/Portfolio.
       Tested end-to-end with test GCash payment.
+- [x] Deployed LIVE to Vercel → https://trading-adviser.vercel.app (auto-deploys on git push to main).
+      Env vars set in Vercel; Supabase URL config points to the live domain. Google login removed
+      (email/password only). PayMongo still in TEST mode.
+- [x] Customizable watchlist — 24 live coins (Binance) + Gold; /watchlist page to search/pick
+      which assets show on the dashboard (per-user, `watchlist` table).
 
-## ▶️ Recommended next
-- [ ] Deploy live to Vercel — put the app on a real URL so it can be used/sold.
-      Needs: Vercel account (free), env vars copied over, NEXT_PUBLIC_SITE_URL set.
+## ▶️ Recommended next (polish before public launch — Deo using it personally first)
+- [ ] Keep dogfooding: track real trades in the journal, confirm signals/data feel right.
+- [ ] Later: PayMongo LIVE keys + webhook; Supabase email confirmation ON; Phase 10 (AI explanations).
 
 ## ⬜ Later
 - [ ] Go-live payments: PayMongo LIVE keys + webhook on the deployed URL (needs PayMongo
