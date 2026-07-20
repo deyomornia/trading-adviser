@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { dataProvider } from "@/lib/data-providers";
+import { getWatchlistSymbols } from "@/lib/watchlist";
+import { DEFAULT_WATCHLIST } from "@/data/assetCatalog";
 import type { Asset, SignalVerdict } from "@/types";
 
 function formatPrice(price: number, currency: string) {
@@ -69,40 +71,55 @@ function AssetCard({ asset }: { asset: Asset }) {
 }
 
 export default async function AssetIndexPage() {
-  const assets = await dataProvider.getAssets();
+  const chosen = await getWatchlistSymbols();
+  const symbols = chosen.length ? chosen : DEFAULT_WATCHLIST;
+  const assets = await dataProvider.getAssets(symbols);
   const crypto = assets.filter((a) => a.type === "crypto");
   const commodities = assets.filter((a) => a.type === "commodity");
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900">Asset Detail</h1>
-      <p className="mt-2 max-w-2xl text-slate-600">
-        Pick an asset to study its price chart, signal score, and a plain-English
-        explanation of why it scored the way it did.
-      </p>
-
-      <div className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-        <strong>Showing SAMPLE data.</strong> Placeholder prices and history for
-        building the app, not live market data.
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">Asset Detail</h1>
+          <p className="mt-2 max-w-2xl text-slate-600">
+            Pick an asset to study its price chart, signal score, and a
+            plain-English explanation of why it scored the way it did.
+          </p>
+        </div>
+        <Link
+          href="/watchlist"
+          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Edit watchlist
+        </Link>
       </div>
 
-      <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
-        Crypto
-      </h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {crypto.map((a) => (
-          <AssetCard key={a.symbol} asset={a} />
-        ))}
-      </div>
+      {crypto.length > 0 && (
+        <>
+          <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Crypto
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {crypto.map((a) => (
+              <AssetCard key={a.symbol} asset={a} />
+            ))}
+          </div>
+        </>
+      )}
 
-      <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
-        Commodities
-      </h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {commodities.map((a) => (
-          <AssetCard key={a.symbol} asset={a} />
-        ))}
-      </div>
+      {commodities.length > 0 && (
+        <>
+          <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Commodities
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {commodities.map((a) => (
+              <AssetCard key={a.symbol} asset={a} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

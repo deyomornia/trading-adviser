@@ -1,28 +1,12 @@
 // Live commodity market data from Twelve Data (free tier: 800 calls/day).
-// Requires TWELVE_DATA_API_KEY in the environment. If the key is missing or a
-// request fails, every function returns null and the caller falls back to
-// SAMPLE data — so the app never breaks and never mislabels sample as live.
+// Functions take a Twelve Data instrument (e.g. "XAU/USD"). Requires
+// TWELVE_DATA_API_KEY; returns null when missing/failed so the caller can fall
+// back to SAMPLE data (never mislabels sample as live).
 
 import type { Candle } from "@/data/sampleCandles";
 
 const BASE = "https://api.twelvedata.com";
 const REVALIDATE_SECONDS = 900; // 15 min — commodities move slowly, saves quota
-
-// Our symbols → Twelve Data instrument symbols.
-// Verified against the free plan: Gold (XAU/USD, priced as forex) works.
-// Crude Oil (WTI) requires a paid Grow/Venture plan, and there is no correct
-// free copper instrument (the bare "HG" ticker is an unrelated stock, not
-// copper), so WTI and HG are intentionally omitted and fall back to SAMPLE
-// rather than show wrong data. Add them here if the plan is upgraded.
-const INSTRUMENTS: Record<string, string> = {
-  XAU: "XAU/USD", // Gold spot
-};
-
-export const TWELVE_DATA_SYMBOLS = Object.keys(INSTRUMENTS);
-
-export function isTwelveDataSymbol(symbol: string): boolean {
-  return symbol in INSTRUMENTS;
-}
 
 export function hasTwelveDataKey(): boolean {
   return Boolean(process.env.TWELVE_DATA_API_KEY);
@@ -33,8 +17,7 @@ export interface LiveQuote {
   dailyChangePct: number;
 }
 
-export async function fetchQuote(symbol: string): Promise<LiveQuote | null> {
-  const instrument = INSTRUMENTS[symbol];
+export async function fetchQuote(instrument: string): Promise<LiveQuote | null> {
   const key = process.env.TWELVE_DATA_API_KEY;
   if (!instrument || !key) return null;
   try {
@@ -55,8 +38,7 @@ export async function fetchQuote(symbol: string): Promise<LiveQuote | null> {
   }
 }
 
-export async function fetchCandles(symbol: string, limit = 90): Promise<Candle[] | null> {
-  const instrument = INSTRUMENTS[symbol];
+export async function fetchCandles(instrument: string, limit = 90): Promise<Candle[] | null> {
   const key = process.env.TWELVE_DATA_API_KEY;
   if (!instrument || !key) return null;
   try {
@@ -67,7 +49,6 @@ export async function fetchCandles(symbol: string, limit = 90): Promise<Candle[]
     if (!res.ok) return null;
     const j = await res.json();
     if (j.status === "error" || !Array.isArray(j.values)) return null;
-
     // Twelve Data returns newest-first; reverse to oldest-first for the engine.
     const candles: Candle[] = j.values
       .map((v: Record<string, string>) => ({
@@ -79,7 +60,6 @@ export async function fetchCandles(symbol: string, limit = 90): Promise<Candle[]
         volume: Number(v.volume ?? 0),
       }))
       .reverse();
-
     return candles.length ? candles : null;
   } catch {
     return null;

@@ -7,8 +7,11 @@ import { scoreAsset } from "@/lib/signal-engine";
 
 export const mockProvider: DataProvider = {
   name: "mock-sample",
-  async getAssets(): Promise<Asset[]> {
-    return sampleAssets.map((asset) => {
+  async getAssets(symbols?: string[]): Promise<Asset[]> {
+    const list = symbols?.length
+      ? sampleAssets.filter((a) => symbols.includes(a.symbol))
+      : sampleAssets;
+    return list.map((asset) => {
       const candles = sampleCandles[asset.symbol];
       if (!candles || candles.length < 50) return asset;
       const { score, signal, stopSuggestion } = scoreAsset(candles);

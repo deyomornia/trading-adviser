@@ -56,7 +56,7 @@ export default async function AssetDetailPage({
   const sym = symbol.toUpperCase();
 
   const [assets, candles] = await Promise.all([
-    dataProvider.getAssets(),
+    dataProvider.getAssets([sym]),
     dataProvider.getCandles(sym),
   ]);
   const asset = assets.find((a) => a.symbol === sym);

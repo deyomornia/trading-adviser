@@ -1,23 +1,16 @@
-// Live data provider: real crypto (Binance) + real commodities (Twelve Data,
-// when a key is present), each falling back to SAMPLE per-asset if a fetch
-// fails. Asset names/types/currency come from the sample registry; live feeds
-// only supply price, daily change, and candles.
+// Live data provider driven by the asset catalog. For each requested symbol it
+// routes to the right feed (Binance / Twelve Data), and falls back to SAMPLE
+// per-asset if a fetch fails or no live feed exists.
 
 import type { Asset } from "@/types";
 import type { Candle } from "@/data/sampleCandles";
 import type { DataProvider } from "./provider";
+import { assetCatalog, catalogBySymbol, DEFAULT_WATCHLIST, type CatalogAsset } from "@/data/assetCatalog";
 import { sampleAssets } from "@/data/sampleAssets";
 import { sampleCandles } from "@/data/sampleCandles";
 import { scoreAsset } from "@/lib/signal-engine";
 import * as binance from "./binance";
 import * as twelveData from "./twelve-data";
-
-// Pick the right live source for a symbol (or null if none applies).
-function sourceFor(symbol: string) {
-  if (binance.isBinanceSymbol(symbol)) return binance;
-  if (twelveData.isTwelveDataSymbol(symbol)) return twelveData;
-  return null;
-}
 
 function scoreOnto(base: Asset, candles: Candle[] | null): Asset {
   if (!candles || candles.length < 50) return base;
@@ -25,39 +18,69 @@ function scoreOnto(base: Asset, candles: Candle[] | null): Asset {
   return { ...base, score, signal, stopSuggestion };
 }
 
-async function buildAsset(meta: Asset): Promise<Asset> {
-  const source = sourceFor(meta.symbol);
-  if (source) {
-    const [quote, candles] = await Promise.all([
-      source.fetchQuote(meta.symbol),
-      source.fetchCandles(meta.symbol),
-    ]);
-    if (quote && candles) {
-      // Genuine live data — mark it NOT sample.
-      const live: Asset = {
-        ...meta,
-        price: quote.price,
-        dailyChangePct: quote.dailyChangePct,
-        isSample: false,
+// SAMPLE fallback for one catalog asset (uses sample data if we have it).
+function sampleAsset(cat: CatalogAsset): Asset {
+  const s = sampleAssets.find((a) => a.symbol === cat.symbol);
+  const base: Asset = s
+    ? { ...s, isSample: true }
+    : {
+        symbol: cat.symbol,
+        name: cat.name,
+        type: cat.type,
+        price: 0,
+        dailyChangePct: 0,
+        currency: cat.currency,
+        isSample: true,
       };
-      return scoreOnto(live, candles);
-    }
+  return scoreOnto(base, sampleCandles[cat.symbol] ?? null);
+}
+
+async function fetchLive(cat: CatalogAsset) {
+  if (cat.source === "binance" && cat.pair) {
+    return Promise.all([binance.fetchQuote(cat.pair), binance.fetchCandles(cat.pair)]);
   }
-  // Fallback: sample values + sample candles, clearly still labelled SAMPLE.
-  return scoreOnto({ ...meta, isSample: true }, sampleCandles[meta.symbol] ?? null);
+  if (cat.source === "twelvedata" && cat.pair) {
+    return Promise.all([twelveData.fetchQuote(cat.pair), twelveData.fetchCandles(cat.pair)]);
+  }
+  return [null, null] as const;
+}
+
+async function buildAsset(cat: CatalogAsset): Promise<Asset> {
+  const [quote, candles] = await fetchLive(cat);
+  if (quote && candles) {
+    const live: Asset = {
+      symbol: cat.symbol,
+      name: cat.name,
+      type: cat.type,
+      price: quote.price,
+      dailyChangePct: quote.dailyChangePct,
+      currency: cat.currency,
+      isSample: false,
+    };
+    return scoreOnto(live, candles);
+  }
+  return sampleAsset(cat);
 }
 
 export const liveProvider: DataProvider = {
   name: "live",
-  async getAssets(): Promise<Asset[]> {
-    return Promise.all(sampleAssets.map(buildAsset));
+  async getAssets(symbols?: string[]): Promise<Asset[]> {
+    const wanted = (symbols && symbols.length ? symbols : DEFAULT_WATCHLIST)
+      .map(catalogBySymbol)
+      .filter((c): c is CatalogAsset => Boolean(c));
+    // De-dupe while preserving order.
+    const seen = new Set<string>();
+    const unique = wanted.filter((c) => (seen.has(c.symbol) ? false : seen.add(c.symbol)));
+    return Promise.all(unique.map(buildAsset));
   },
   async getCandles(symbol: string): Promise<Candle[] | null> {
-    const source = sourceFor(symbol);
-    if (source) {
-      const candles = await source.fetchCandles(symbol);
-      if (candles) return candles;
-    }
+    const cat = catalogBySymbol(symbol);
+    if (!cat) return sampleCandles[symbol] ?? null;
+    const [, candles] = await fetchLive(cat);
+    if (candles) return candles;
     return sampleCandles[symbol] ?? null;
   },
 };
+
+// Exposed for callers that want the whole catalog (e.g. the watchlist page).
+export { assetCatalog };

@@ -8,6 +8,7 @@ export const PROTECTED_PREFIXES = [
   "/trade-plan",
   "/assets",
   "/settings",
+  "/watchlist",
 ];
 
 // The dashboard ("/") is intentionally PUBLIC for now so visitors can see a

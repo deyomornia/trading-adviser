@@ -9,6 +9,7 @@ import { signOut } from "@/app/auth/actions";
 // The 6 pages of the app. Add or rename here and the whole menu updates.
 const links = [
   { href: "/", label: "Dashboard" },
+  { href: "/watchlist", label: "Watchlist" },
   { href: "/assets", label: "Asset Detail" },
   { href: "/trade-plan", label: "Trade Plan" },
   { href: "/journal", label: "Journal" },

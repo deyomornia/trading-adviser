@@ -1,34 +1,19 @@
 // Live crypto market data from Binance's PUBLIC market-data API (no key needed).
-// Uses data-api.binance.vision, the dedicated public endpoint that holds up
-// well from cloud/deploy environments. Results are cached for 5 minutes so we
-// don't hammer the API on every page view.
+// Functions take a Binance pair (e.g. "BTCUSDT"); the catalog maps our symbols
+// to pairs. Results cached 5 min so we don't hammer the API on every view.
 
 import type { Candle } from "@/data/sampleCandles";
 
 const BASE = "https://data-api.binance.vision/api/v3";
 const REVALIDATE_SECONDS = 300;
 
-// Our symbols → Binance trading pairs (all priced in USDT ≈ USD).
-const PAIRS: Record<string, string> = {
-  BTC: "BTCUSDT",
-  ETH: "ETHUSDT",
-  SOL: "SOLUSDT",
-};
-
-export const BINANCE_SYMBOLS = Object.keys(PAIRS);
-
-export function isBinanceSymbol(symbol: string): boolean {
-  return symbol in PAIRS;
-}
-
 export interface LiveQuote {
   price: number;
   dailyChangePct: number;
 }
 
-// Current price + 24h change. Returns null on any failure (caller falls back).
-export async function fetchQuote(symbol: string): Promise<LiveQuote | null> {
-  const pair = PAIRS[symbol];
+// Current price + 24h change for a pair. Null on any failure.
+export async function fetchQuote(pair: string): Promise<LiveQuote | null> {
   if (!pair) return null;
   try {
     const res = await fetch(`${BASE}/ticker/24hr?symbol=${pair}`, {
@@ -45,9 +30,8 @@ export async function fetchQuote(symbol: string): Promise<LiveQuote | null> {
   }
 }
 
-// Last `limit` daily candles, oldest first. Returns null on failure.
-export async function fetchCandles(symbol: string, limit = 90): Promise<Candle[] | null> {
-  const pair = PAIRS[symbol];
+// Last `limit` daily candles (oldest first). Null on failure.
+export async function fetchCandles(pair: string, limit = 90): Promise<Candle[] | null> {
   if (!pair) return null;
   try {
     const res = await fetch(`${BASE}/klines?symbol=${pair}&interval=1d&limit=${limit}`, {
@@ -56,10 +40,9 @@ export async function fetchCandles(symbol: string, limit = 90): Promise<Candle[]
     if (!res.ok) return null;
     const rows = await res.json();
     if (!Array.isArray(rows) || rows.length === 0) return null;
-
     // Binance kline row: [openTime(ms), open, high, low, close, volume, ...]
     return rows.map((r: unknown[]) => ({
-      time: Math.floor(Number(r[0]) / 1000), // ms → unix seconds
+      time: Math.floor(Number(r[0]) / 1000),
       open: Number(r[1]),
       high: Number(r[2]),
       low: Number(r[3]),

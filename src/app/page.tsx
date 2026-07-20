@@ -1,10 +1,15 @@
+import Link from "next/link";
 import { dataProvider } from "@/lib/data-providers";
+import { getWatchlistSymbols } from "@/lib/watchlist";
+import { DEFAULT_WATCHLIST } from "@/data/assetCatalog";
 import AssetTable from "@/components/AssetTable";
 
 export default async function DashboardPage() {
-  // Pull assets from the data provider (live crypto + commodities, with
-  // per-asset fallback to clearly-labelled sample data).
-  const assets = await dataProvider.getAssets();
+  // Show the user's chosen watchlist (or a starter set if they have none / are
+  // logged out). Data is live where available, with SAMPLE fallback per asset.
+  const chosen = await getWatchlistSymbols();
+  const symbols = chosen.length ? chosen : DEFAULT_WATCHLIST;
+  const assets = await dataProvider.getAssets(symbols);
   const crypto = assets.filter((a) => a.type === "crypto");
   const commodities = assets.filter((a) => a.type === "commodity");
 
@@ -13,11 +18,21 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-      <p className="mt-2 max-w-2xl text-slate-600">
-        Your watchlist of crypto and commodity assets. The on-demand screener
-        that ranks the top candidates is added in a later step.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+          <p className="mt-2 max-w-2xl text-slate-600">
+            Your watchlist of crypto and commodity assets, with a 0–100 signal
+            score for each.
+          </p>
+        </div>
+        <Link
+          href="/watchlist"
+          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Edit watchlist
+        </Link>
+      </div>
 
       {/* Honest data-source banner: reflects the live/sample mix. */}
       {anyLive && anySample ? (
@@ -38,10 +53,20 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <div className="mt-8">
-        <AssetTable title="Crypto" assets={crypto} />
-        <AssetTable title="Commodities" assets={commodities} />
-      </div>
+      {assets.length === 0 ? (
+        <p className="mt-8 rounded-lg border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-400">
+          Your watchlist is empty.{" "}
+          <Link href="/watchlist" className="font-medium text-slate-600 underline">
+            Add some assets
+          </Link>{" "}
+          to get started.
+        </p>
+      ) : (
+        <div className="mt-8">
+          {crypto.length > 0 && <AssetTable title="Crypto" assets={crypto} />}
+          {commodities.length > 0 && <AssetTable title="Commodities" assets={commodities} />}
+        </div>
+      )}
     </div>
   );
 }
