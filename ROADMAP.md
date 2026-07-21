@@ -23,12 +23,19 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 - [x] Customizable watchlist — 24 live coins (Binance) + Gold; /watchlist page to search/pick
       which assets show on the dashboard (per-user, `watchlist` table).
 - [x] Phase 10 — AI "take" on the Asset Detail page (Claude Opus 4.8, cached, streamed via
-      Suspense; hidden until ANTHROPIC_API_KEY is set). Code shipped; enable by adding the key.
+      Suspense; enabled — ANTHROPIC_API_KEY set in Vercel). Verified working.
+- [x] Trading style selector — Day (hourly) / Swing (daily) / Position (weekly). Changes the
+      candle timeframe the signals are scored on; choice stored in a cookie. Crypto has all
+      timeframes (Binance, free); commodities use daily where intraday isn't on the free plan.
 
-## ▶️ Recommended next (polish before public launch — Deo using it personally first)
-- [ ] Keep dogfooding: track real trades in the journal, confirm signals/data feel right.
-- [ ] Enable Phase 10: add ANTHROPIC_API_KEY in Vercel (+ .env.local) to switch the AI take on.
-- [ ] Go-live: PayMongo LIVE keys + webhook; Supabase email confirmation ON.
+## ▶️ Recommended next
+- [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
+      so his real SPOT trades import into the journal automatically (periodic/on-open sync, not a
+      live push), for later performance insights. SECURITY: read-only key only (no trade/withdraw),
+      stored encrypted server-side; spot only (matches the no-leverage rule). Verify the authed
+      Binance account API works from PH + Vercel; trades are queried per trading pair. CSV import
+      was the safer alt but Deo chose auto-sync.
+- [ ] Keep dogfooding; then go-live: PayMongo LIVE keys + webhook; Supabase email confirmation ON.
 
 ## ⬜ Later
 - [ ] Go-live payments: PayMongo LIVE keys + webhook on the deployed URL (needs PayMongo
