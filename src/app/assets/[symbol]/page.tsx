@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { dataProvider } from "@/lib/data-providers";
 import { scoreAsset, explainScore } from "@/lib/signal-engine";
 import type { SignalVerdict } from "@/types";
 import CandleChart from "@/components/CandleChart";
+import AiSummary from "@/components/AiSummary";
 
 function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -120,6 +122,15 @@ export default async function AssetDetailPage({
           decision-support only — not financial advice.
         </div>
       )}
+
+      {/* AI take — streams in without blocking the page; hidden if AI not set up */}
+      <Suspense
+        fallback={
+          <p className="mt-6 text-sm text-slate-400">Generating AI take…</p>
+        }
+      >
+        <AiSummary asset={asset} result={result} />
+      </Suspense>
 
       {/* Chart */}
       <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
