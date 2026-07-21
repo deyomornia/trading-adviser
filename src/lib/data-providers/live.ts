@@ -1,6 +1,7 @@
-// Live data provider driven by the asset catalog. For each requested symbol it
-// routes to the right feed (Binance / Twelve Data), and falls back to SAMPLE
-// per-asset if a fetch fails or no live feed exists.
+// Live data provider driven by the asset catalog. Fetches candles at the
+// timeframe for the chosen trading style (day = hourly, swing = daily,
+// position = weekly), and falls back to SAMPLE per-asset if a fetch fails or
+// no live feed exists.
 
 import type { Asset } from "@/types";
 import type { Candle } from "@/data/sampleCandles";
@@ -9,6 +10,7 @@ import { assetCatalog, catalogBySymbol, DEFAULT_WATCHLIST, type CatalogAsset } f
 import { sampleAssets } from "@/data/sampleAssets";
 import { sampleCandles } from "@/data/sampleCandles";
 import { scoreAsset } from "@/lib/signal-engine";
+import { STYLE_CONFIG, type TradingStyle } from "@/lib/tradingStyle";
 import * as binance from "./binance";
 import * as twelveData from "./twelve-data";
 
@@ -18,7 +20,7 @@ function scoreOnto(base: Asset, candles: Candle[] | null): Asset {
   return { ...base, score, signal, stopSuggestion };
 }
 
-// SAMPLE fallback for one catalog asset (uses sample data if we have it).
+// SAMPLE fallback for one catalog asset (uses sample daily data if we have it).
 function sampleAsset(cat: CatalogAsset): Asset {
   const s = sampleAssets.find((a) => a.symbol === cat.symbol);
   const base: Asset = s
@@ -35,18 +37,25 @@ function sampleAsset(cat: CatalogAsset): Asset {
   return scoreOnto(base, sampleCandles[cat.symbol] ?? null);
 }
 
-async function fetchLive(cat: CatalogAsset) {
+async function fetchLive(cat: CatalogAsset, style: TradingStyle) {
+  const cfg = STYLE_CONFIG[style];
   if (cat.source === "binance" && cat.pair) {
-    return Promise.all([binance.fetchQuote(cat.pair), binance.fetchCandles(cat.pair)]);
+    return Promise.all([
+      binance.fetchQuote(cat.pair),
+      binance.fetchCandles(cat.pair, cfg.binanceInterval, cfg.limit),
+    ]);
   }
   if (cat.source === "twelvedata" && cat.pair) {
-    return Promise.all([twelveData.fetchQuote(cat.pair), twelveData.fetchCandles(cat.pair)]);
+    return Promise.all([
+      twelveData.fetchQuote(cat.pair),
+      twelveData.fetchCandles(cat.pair, cfg.twelveInterval, cfg.limit),
+    ]);
   }
   return [null, null] as const;
 }
 
-async function buildAsset(cat: CatalogAsset): Promise<Asset> {
-  const [quote, candles] = await fetchLive(cat);
+async function buildAsset(cat: CatalogAsset, style: TradingStyle): Promise<Asset> {
+  const [quote, candles] = await fetchLive(cat, style);
   if (quote && candles) {
     const live: Asset = {
       symbol: cat.symbol,
@@ -64,23 +73,21 @@ async function buildAsset(cat: CatalogAsset): Promise<Asset> {
 
 export const liveProvider: DataProvider = {
   name: "live",
-  async getAssets(symbols?: string[]): Promise<Asset[]> {
+  async getAssets(symbols?: string[], style: TradingStyle = "swing"): Promise<Asset[]> {
     const wanted = (symbols && symbols.length ? symbols : DEFAULT_WATCHLIST)
       .map(catalogBySymbol)
       .filter((c): c is CatalogAsset => Boolean(c));
-    // De-dupe while preserving order.
     const seen = new Set<string>();
     const unique = wanted.filter((c) => (seen.has(c.symbol) ? false : seen.add(c.symbol)));
-    return Promise.all(unique.map(buildAsset));
+    return Promise.all(unique.map((c) => buildAsset(c, style)));
   },
-  async getCandles(symbol: string): Promise<Candle[] | null> {
+  async getCandles(symbol: string, style: TradingStyle = "swing"): Promise<Candle[] | null> {
     const cat = catalogBySymbol(symbol);
     if (!cat) return sampleCandles[symbol] ?? null;
-    const [, candles] = await fetchLive(cat);
+    const [, candles] = await fetchLive(cat, style);
     if (candles) return candles;
     return sampleCandles[symbol] ?? null;
   },
 };
 
-// Exposed for callers that want the whole catalog (e.g. the watchlist page).
 export { assetCatalog };

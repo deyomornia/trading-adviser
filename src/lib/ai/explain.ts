@@ -37,6 +37,7 @@ interface ExplainInput {
   macdHistogram: number;
   stopSuggestion: number;
   isSample: boolean;
+  styleLabel: string;
 }
 
 async function generate(input: ExplainInput): Promise<string | null> {
@@ -52,13 +53,14 @@ async function generate(input: ExplainInput): Promise<string | null> {
           role: "user",
           content:
             `Asset: ${input.name} (${input.symbol})\n` +
+            `Trading style: ${input.styleLabel} (signals are based on this timeframe)\n` +
             `Price: ${input.price} ${input.currency}${input.isSample ? " (SAMPLE data)" : " (live)"}\n` +
             `Score: ${input.score}/100 — verdict: ${input.signal}\n` +
             `Trend: EMA-20 is ${input.emaDiffPct}% vs EMA-50\n` +
             `Momentum: RSI ${input.rsi}\n` +
             `MACD histogram: ${input.macdHistogram}\n` +
             `Suggested stop-loss level: ${input.stopSuggestion}\n\n` +
-            `Explain what this suggests, following the rules.`,
+            `Explain what this suggests for a ${input.styleLabel.toLowerCase()} trader, following the rules.`,
         },
       ],
     });
@@ -73,7 +75,8 @@ async function generate(input: ExplainInput): Promise<string | null> {
 
 export async function aiExplainAsset(
   asset: Asset,
-  result: ScoreResult
+  result: ScoreResult,
+  styleLabel = "Swing"
 ): Promise<string | null> {
   if (!aiConfigured()) return null;
 
@@ -89,13 +92,14 @@ export async function aiExplainAsset(
     macdHistogram: result.indicators.macdHistogram,
     stopSuggestion: result.stopSuggestion,
     isSample: asset.isSample,
+    styleLabel,
   };
 
-  // Cache by symbol + score + signal so we don't re-call Claude on every view;
-  // a new score (prices moved enough) produces a fresh take.
+  // Cache by symbol + style + score + signal so each timeframe gets its own
+  // take, and we don't re-call Claude on every view.
   const cached = unstable_cache(
     () => generate(input),
-    ["ai-explain", `${asset.symbol}:${result.score}:${result.signal}`],
+    ["ai-explain", `${asset.symbol}:${styleLabel}:${result.score}:${result.signal}`],
     { revalidate: 3600 }
   );
   return cached();

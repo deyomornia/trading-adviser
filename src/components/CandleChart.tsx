@@ -13,7 +13,13 @@ import {
 } from "lightweight-charts";
 import type { Candle } from "@/data/sampleCandles";
 
-export default function CandleChart({ candles }: { candles: Candle[] }) {
+export default function CandleChart({
+  candles,
+  intraday = false,
+}: {
+  candles: Candle[];
+  intraday?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +38,7 @@ export default function CandleChart({ candles }: { candles: Candle[] }) {
         horzLines: { color: "#f1f5f9" },
       },
       rightPriceScale: { borderColor: "#e2e8f0" }, // slate-200
-      timeScale: { borderColor: "#e2e8f0", timeVisible: false },
+      timeScale: { borderColor: "#e2e8f0", timeVisible: intraday, secondsVisible: false },
     });
 
     const series = chart.addSeries(CandlestickSeries, {
@@ -63,7 +69,7 @@ export default function CandleChart({ candles }: { candles: Candle[] }) {
       window.removeEventListener("resize", handleResize);
       chart.remove();
     };
-  }, [candles]);
+  }, [candles, intraday]);
 
   return <div ref={containerRef} className="w-full" />;
 }

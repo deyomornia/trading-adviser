@@ -38,13 +38,17 @@ export async function fetchQuote(instrument: string): Promise<LiveQuote | null> 
   }
 }
 
-export async function fetchCandles(instrument: string, limit = 90): Promise<Candle[] | null> {
+export async function fetchCandles(
+  instrument: string,
+  interval = "1day",
+  limit = 90
+): Promise<Candle[] | null> {
   const key = process.env.TWELVE_DATA_API_KEY;
   if (!instrument || !key) return null;
   try {
     const url =
       `${BASE}/time_series?symbol=${encodeURIComponent(instrument)}` +
-      `&interval=1day&outputsize=${limit}&apikey=${key}`;
+      `&interval=${encodeURIComponent(interval)}&outputsize=${limit}&apikey=${key}`;
     const res = await fetch(url, { next: { revalidate: REVALIDATE_SECONDS } });
     if (!res.ok) return null;
     const j = await res.json();

@@ -30,11 +30,15 @@ export async function fetchQuote(pair: string): Promise<LiveQuote | null> {
   }
 }
 
-// Last `limit` daily candles (oldest first). Null on failure.
-export async function fetchCandles(pair: string, limit = 90): Promise<Candle[] | null> {
+// Last `limit` candles at the given interval (oldest first). Null on failure.
+export async function fetchCandles(
+  pair: string,
+  interval = "1d",
+  limit = 90
+): Promise<Candle[] | null> {
   if (!pair) return null;
   try {
-    const res = await fetch(`${BASE}/klines?symbol=${pair}&interval=1d&limit=${limit}`, {
+    const res = await fetch(`${BASE}/klines?symbol=${pair}&interval=${interval}&limit=${limit}`, {
       next: { revalidate: REVALIDATE_SECONDS },
     });
     if (!res.ok) return null;

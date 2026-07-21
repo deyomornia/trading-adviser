@@ -9,11 +9,13 @@ import type { ScoreResult } from "@/lib/signal-engine";
 export default async function AiSummary({
   asset,
   result,
+  styleLabel,
 }: {
   asset: Asset;
   result: ScoreResult;
+  styleLabel?: string;
 }) {
-  const text = await aiExplainAsset(asset, result);
+  const text = await aiExplainAsset(asset, result, styleLabel);
   if (!text) return null;
 
   return (

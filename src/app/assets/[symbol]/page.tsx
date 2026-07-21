@@ -3,9 +3,11 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { dataProvider } from "@/lib/data-providers";
 import { scoreAsset, explainScore } from "@/lib/signal-engine";
+import { getTradingStyle, STYLE_CONFIG } from "@/lib/tradingStyle";
 import type { SignalVerdict } from "@/types";
 import CandleChart from "@/components/CandleChart";
 import AiSummary from "@/components/AiSummary";
+import TradingStyleSelector from "@/components/TradingStyleSelector";
 
 function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -57,9 +59,11 @@ export default async function AssetDetailPage({
   const { symbol } = await params;
   const sym = symbol.toUpperCase();
 
+  const style = await getTradingStyle();
+  const styleCfg = STYLE_CONFIG[style];
   const [assets, candles] = await Promise.all([
-    dataProvider.getAssets([sym]),
-    dataProvider.getCandles(sym),
+    dataProvider.getAssets([sym], style),
+    dataProvider.getCandles(sym, style),
   ]);
   const asset = assets.find((a) => a.symbol === sym);
 
@@ -110,6 +114,14 @@ export default async function AssetDetailPage({
         </div>
       </div>
 
+      {/* Trading style — the whole page (chart, score, take) uses this timeframe */}
+      <div className="mt-4">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+          Trading style
+        </span>
+        <TradingStyleSelector current={style} />
+      </div>
+
       {/* Data-source reminder */}
       {asset.isSample ? (
         <div className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -129,15 +141,15 @@ export default async function AssetDetailPage({
           <p className="mt-6 text-sm text-slate-400">Generating AI take…</p>
         }
       >
-        <AiSummary asset={asset} result={result} />
+        <AiSummary asset={asset} result={result} styleLabel={styleCfg.label} />
       </Suspense>
 
       {/* Chart */}
       <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Price — last 90 days
+          Price — last {candles.length} {styleCfg.unit}
         </h2>
-        <CandleChart candles={candles} />
+        <CandleChart candles={candles} intraday={styleCfg.intraday} />
       </section>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">

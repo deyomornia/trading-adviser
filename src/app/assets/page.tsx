@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { dataProvider } from "@/lib/data-providers";
 import { getWatchlistSymbols } from "@/lib/watchlist";
+import { getTradingStyle } from "@/lib/tradingStyle";
 import { DEFAULT_WATCHLIST } from "@/data/assetCatalog";
+import TradingStyleSelector from "@/components/TradingStyleSelector";
 import type { Asset, SignalVerdict } from "@/types";
 
 function formatPrice(price: number, currency: string) {
@@ -71,9 +73,9 @@ function AssetCard({ asset }: { asset: Asset }) {
 }
 
 export default async function AssetIndexPage() {
-  const chosen = await getWatchlistSymbols();
+  const [chosen, style] = await Promise.all([getWatchlistSymbols(), getTradingStyle()]);
   const symbols = chosen.length ? chosen : DEFAULT_WATCHLIST;
-  const assets = await dataProvider.getAssets(symbols);
+  const assets = await dataProvider.getAssets(symbols, style);
   const crypto = assets.filter((a) => a.type === "crypto");
   const commodities = assets.filter((a) => a.type === "commodity");
 
@@ -93,6 +95,13 @@ export default async function AssetIndexPage() {
         >
           Edit watchlist
         </Link>
+      </div>
+
+      <div className="mt-4">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+          Trading style
+        </span>
+        <TradingStyleSelector current={style} />
       </div>
 
       {crypto.length > 0 && (

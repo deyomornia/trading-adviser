@@ -5,6 +5,7 @@ import { sampleAssets } from "@/data/sampleAssets";
 import { sampleCandles } from "@/data/sampleCandles";
 import { scoreAsset } from "@/lib/signal-engine";
 
+// The mock provider serves sample daily data regardless of trading style.
 export const mockProvider: DataProvider = {
   name: "mock-sample",
   async getAssets(symbols?: string[]): Promise<Asset[]> {

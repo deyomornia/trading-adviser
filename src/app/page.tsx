@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { dataProvider } from "@/lib/data-providers";
 import { getWatchlistSymbols } from "@/lib/watchlist";
+import { getTradingStyle } from "@/lib/tradingStyle";
 import { DEFAULT_WATCHLIST } from "@/data/assetCatalog";
 import AssetTable from "@/components/AssetTable";
+import TradingStyleSelector from "@/components/TradingStyleSelector";
 
 export default async function DashboardPage() {
   // Show the user's chosen watchlist (or a starter set if they have none / are
-  // logged out). Data is live where available, with SAMPLE fallback per asset.
-  const chosen = await getWatchlistSymbols();
+  // logged out), scored on the timeframe for their trading style.
+  const [chosen, style] = await Promise.all([getWatchlistSymbols(), getTradingStyle()]);
   const symbols = chosen.length ? chosen : DEFAULT_WATCHLIST;
-  const assets = await dataProvider.getAssets(symbols);
+  const assets = await dataProvider.getAssets(symbols, style);
   const crypto = assets.filter((a) => a.type === "crypto");
   const commodities = assets.filter((a) => a.type === "commodity");
 
@@ -32,6 +34,14 @@ export default async function DashboardPage() {
         >
           Edit watchlist
         </Link>
+      </div>
+
+      {/* Trading style — changes the timeframe signals are based on */}
+      <div className="mt-4">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+          Trading style
+        </span>
+        <TradingStyleSelector current={style} />
       </div>
 
       {/* Honest data-source banner: reflects the live/sample mix. */}
