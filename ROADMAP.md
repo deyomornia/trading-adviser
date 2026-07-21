@@ -22,10 +22,13 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
       (email/password only). PayMongo still in TEST mode.
 - [x] Customizable watchlist — 24 live coins (Binance) + Gold; /watchlist page to search/pick
       which assets show on the dashboard (per-user, `watchlist` table).
+- [x] Phase 10 — AI "take" on the Asset Detail page (Claude Opus 4.8, cached, streamed via
+      Suspense; hidden until ANTHROPIC_API_KEY is set). Code shipped; enable by adding the key.
 
 ## ▶️ Recommended next (polish before public launch — Deo using it personally first)
 - [ ] Keep dogfooding: track real trades in the journal, confirm signals/data feel right.
-- [ ] Later: PayMongo LIVE keys + webhook; Supabase email confirmation ON; Phase 10 (AI explanations).
+- [ ] Enable Phase 10: add ANTHROPIC_API_KEY in Vercel (+ .env.local) to switch the AI take on.
+- [ ] Go-live: PayMongo LIVE keys + webhook; Supabase email confirmation ON.
 
 ## ⬜ Later
 - [ ] Go-live payments: PayMongo LIVE keys + webhook on the deployed URL (needs PayMongo
