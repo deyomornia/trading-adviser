@@ -16,8 +16,21 @@ import * as twelveData from "./twelve-data";
 
 function scoreOnto(base: Asset, candles: Candle[] | null): Asset {
   if (!candles || candles.length < 50) return base;
-  const { score, signal, stopSuggestion } = scoreAsset(candles);
-  return { ...base, score, signal, stopSuggestion };
+  const { score, signal, stopSuggestion, breakdown, indicators } = scoreAsset(candles);
+  return {
+    ...base,
+    score,
+    signal,
+    stopSuggestion,
+    detail: {
+      trendPts: breakdown.trend,
+      momentumPts: breakdown.momentum,
+      macdPts: breakdown.macdScore,
+      emaDiffPct: indicators.emaDiffPct,
+      rsi: indicators.rsi,
+      macdHistogram: indicators.macdHistogram,
+    },
+  };
 }
 
 // SAMPLE fallback for one catalog asset (uses sample daily data if we have it).

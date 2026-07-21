@@ -5,6 +5,16 @@ export type AssetType = "crypto" | "commodity";
 
 export type SignalVerdict = "Buy Candidate" | "Wait" | "Avoid";
 
+// The pieces behind a signal, for the "Why this signal?" popover.
+export interface SignalDetail {
+  trendPts: number;      // 0–35
+  momentumPts: number;   // 0–35
+  macdPts: number;       // 0–30
+  emaDiffPct: number;    // how far EMA-20 is above/below EMA-50
+  rsi: number;           // 0–100
+  macdHistogram: number; // >0 = momentum building
+}
+
 export interface Asset {
   symbol: string;          // e.g. "BTC"
   name: string;            // e.g. "Bitcoin"
@@ -16,6 +26,7 @@ export interface Asset {
   score?: number;          // 0–100 signal score (Phase 5)
   signal?: SignalVerdict;  // plain-English verdict (Phase 5)
   stopSuggestion?: number; // recent swing low for stop placement (Phase 5)
+  detail?: SignalDetail;   // the parameters behind the signal (for the popover)
 }
 
 // Trade Journal (Phase 7). One record per trade the user logs.

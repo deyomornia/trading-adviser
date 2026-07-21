@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { Asset, SignalVerdict } from "@/types";
+import type { Asset } from "@/types";
+import SignalInfo from "@/components/SignalInfo";
 
 function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -23,20 +24,6 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
-function SignalBadge({ signal }: { signal: SignalVerdict }) {
-  const color =
-    signal === "Buy Candidate"
-      ? "bg-green-100 text-green-800"
-      : signal === "Avoid"
-      ? "bg-red-100 text-red-800"
-      : "bg-amber-100 text-amber-800";
-  return (
-    <span className={`rounded px-2 py-0.5 text-xs font-medium ${color}`}>
-      {signal}
-    </span>
-  );
-}
-
 export default function AssetTable({
   title,
   assets,
@@ -49,7 +36,7 @@ export default function AssetTable({
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </h2>
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-slate-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500">
@@ -80,7 +67,7 @@ export default function AssetTable({
                   </td>
                   <td className="px-4 py-3">
                     {a.signal ? (
-                      <SignalBadge signal={a.signal} />
+                      <SignalInfo signal={a.signal} score={a.score} detail={a.detail} />
                     ) : (
                       <span className="text-slate-300">—</span>
                     )}

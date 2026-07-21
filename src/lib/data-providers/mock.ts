@@ -15,8 +15,21 @@ export const mockProvider: DataProvider = {
     return list.map((asset) => {
       const candles = sampleCandles[asset.symbol];
       if (!candles || candles.length < 50) return asset;
-      const { score, signal, stopSuggestion } = scoreAsset(candles);
-      return { ...asset, score, signal, stopSuggestion };
+      const { score, signal, stopSuggestion, breakdown, indicators } = scoreAsset(candles);
+      return {
+        ...asset,
+        score,
+        signal,
+        stopSuggestion,
+        detail: {
+          trendPts: breakdown.trend,
+          momentumPts: breakdown.momentum,
+          macdPts: breakdown.macdScore,
+          emaDiffPct: indicators.emaDiffPct,
+          rsi: indicators.rsi,
+          macdHistogram: indicators.macdHistogram,
+        },
+      };
     });
   },
   async getCandles(symbol: string): Promise<Candle[] | null> {

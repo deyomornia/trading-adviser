@@ -28,7 +28,26 @@ export default function TradingStyleSelector({ current }: { current: TradingStyl
           );
         })}
       </div>
-      <p className="mt-1 text-xs text-slate-400">{STYLE_CONFIG[current].blurb}</p>
+      {/* Explanation card for the currently selected style */}
+      <div className="mt-3 max-w-md rounded-lg border border-slate-200 bg-white p-4">
+        <div className="text-sm font-semibold text-slate-900">
+          {STYLE_CONFIG[current].label} trading
+        </div>
+        <dl className="mt-2 space-y-1.5 text-sm">
+          <div className="flex gap-2">
+            <dt className="w-28 shrink-0 text-slate-400">Holding time</dt>
+            <dd className="text-slate-700">{STYLE_CONFIG[current].holding}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-28 shrink-0 text-slate-400">Signals use</dt>
+            <dd className="text-slate-700">{STYLE_CONFIG[current].bars}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-28 shrink-0 text-slate-400">Best for</dt>
+            <dd className="text-slate-700">{STYLE_CONFIG[current].who}</dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }
