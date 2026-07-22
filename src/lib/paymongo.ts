@@ -69,20 +69,30 @@ export async function createCheckoutSession(opts: {
   }
 }
 
-// True once the checkout session has a paid payment.
-export async function isCheckoutPaid(sessionId: string): Promise<boolean> {
+export interface CheckoutInfo {
+  paid: boolean;
+  userId: string | null; // from the session's metadata.user_id
+}
+
+// Verify a checkout session server-side: is it paid, and which user does it
+// belong to. The success page uses this to confirm the payment belongs to the
+// current user before granting access (so a paid session id can't be reused).
+export async function getCheckoutInfo(sessionId: string): Promise<CheckoutInfo | null> {
   try {
     const res = await fetch(`${BASE}/checkout_sessions/${sessionId}`, {
       headers: { Authorization: authHeader() },
     });
-    if (!res.ok) return false;
+    if (!res.ok) return null;
     const j = await res.json();
-    const payments = j?.data?.attributes?.payments ?? [];
-    return payments.some(
+    const attrs = j?.data?.attributes;
+    const payments = attrs?.payments ?? [];
+    const paid = payments.some(
       (p: { attributes?: { status?: string } }) => p?.attributes?.status === "paid"
     );
+    const userId: string | null = attrs?.metadata?.user_id ?? null;
+    return { paid, userId };
   } catch {
-    return false;
+    return null;
   }
 }
 

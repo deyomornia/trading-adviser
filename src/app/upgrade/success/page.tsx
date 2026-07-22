@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { paymongoConfigured, isCheckoutPaid, ACCESS_DAYS } from "@/lib/paymongo";
+import { createAdminClient, adminConfigured } from "@/lib/supabase/admin";
+import { paymongoConfigured, getCheckoutInfo, ACCESS_DAYS } from "@/lib/paymongo";
 import { extendAccess } from "@/lib/billing";
 
 // Always render fresh: this page verifies payment against the user's session.
 export const dynamic = "force-dynamic";
 
-// After PayMongo checkout, verify the remembered session and grant access.
-// (The webhook also does this; syncing here makes it work in local dev too.)
+// After PayMongo checkout, verify the remembered session belongs to THIS user
+// and is paid, then grant access. Prefer the admin (service-role) client so it
+// works even after billing columns are locked to server-only writes; falls back
+// to the user session if the admin key isn't configured yet.
 export default async function UpgradeSuccessPage() {
   let ok = false;
 
@@ -25,11 +28,15 @@ export default async function UpgradeSuccessPage() {
         .single();
 
       const sessionId = profile?.pending_checkout_id;
-      if (sessionId && (await isCheckoutPaid(sessionId))) {
-        await extendAccess(supabase, user.id, ACCESS_DAYS);
+      const info = sessionId ? await getCheckoutInfo(sessionId) : null;
+
+      // Only grant if the checkout is paid AND its metadata.user_id is this user.
+      if (info?.paid && info.userId === user.id) {
+        const writer = adminConfigured() ? createAdminClient() : supabase;
+        await extendAccess(writer, user.id, ACCESS_DAYS);
         ok = true;
       } else if (profile?.paid_until && new Date(profile.paid_until) > new Date()) {
-        // Already granted (e.g. webhook beat us to it).
+        // Already granted (e.g. the webhook beat us to it).
         ok = true;
       }
     }

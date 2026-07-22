@@ -54,13 +54,15 @@ export default function WatchlistManager({
                 <span className="text-slate-400">{a.symbol}</span>
                 <div className="mt-0.5 flex items-center gap-2">
                   <span className="text-xs capitalize text-slate-500">{a.type}</span>
+                  {/* Describe the feed's capability, not a claim of live data —
+                      the actual LIVE/SAMPLE status is shown on the dashboard. */}
                   {a.source === "sample" ? (
                     <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-                      SAMPLE
+                      Sample only
                     </span>
                   ) : (
-                    <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
-                      LIVE
+                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                      Live feed
                     </span>
                   )}
                 </div>

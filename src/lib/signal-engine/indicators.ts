@@ -1,13 +1,27 @@
 // Pure math — no UI or framework imports.
 // All functions return a value per input price, aligned by index.
 
-/** Exponential Moving Average (EMA). */
-export function ema(prices: number[], period: number): number[] {
+/**
+ * Exponential Moving Average (EMA).
+ * Seeded with a Simple Moving Average of the first `period` finite values (the
+ * standard warm-up), so the average isn't contaminated by an arbitrary first
+ * price. Indexes before the seed are NaN. Tolerates leading NaN inputs (e.g.
+ * the MACD line, which is undefined until the slow EMA warms up).
+ */
+export function ema(values: number[], period: number): number[] {
+  const result: number[] = new Array(values.length).fill(NaN);
   const k = 2 / (period + 1);
-  const result: number[] = new Array(prices.length);
-  result[0] = prices[0];
-  for (let i = 1; i < prices.length; i++) {
-    result[i] = prices[i] * k + result[i - 1] * (1 - k);
+
+  // First index that has a finite value (skip leading NaN).
+  const start = values.findIndex((v) => Number.isFinite(v));
+  if (start === -1 || values.length - start < period) return result;
+
+  let sum = 0;
+  for (let i = start; i < start + period; i++) sum += values[i];
+  result[start + period - 1] = sum / period; // SMA seed
+
+  for (let i = start + period; i < values.length; i++) {
+    result[i] = values[i] * k + result[i - 1] * (1 - k);
   }
   return result;
 }

@@ -3,6 +3,7 @@
 // to pairs. Results cached 5 min so we don't hammer the API on every view.
 
 import type { Candle } from "@/data/sampleCandles";
+import { cleanCandles } from "./util";
 
 const BASE = "https://data-api.binance.vision/api/v3";
 const REVALIDATE_SECONDS = 300;
@@ -45,7 +46,7 @@ export async function fetchCandles(
     const rows = await res.json();
     if (!Array.isArray(rows) || rows.length === 0) return null;
     // Binance kline row: [openTime(ms), open, high, low, close, volume, ...]
-    return rows.map((r: unknown[]) => ({
+    const candles = rows.map((r: unknown[]) => ({
       time: Math.floor(Number(r[0]) / 1000),
       open: Number(r[1]),
       high: Number(r[2]),
@@ -53,6 +54,8 @@ export async function fetchCandles(
       close: Number(r[4]),
       volume: Number(r[5]),
     }));
+    const clean = cleanCandles(candles);
+    return clean.length ? clean : null;
   } catch {
     return null;
   }

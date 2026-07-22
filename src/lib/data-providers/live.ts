@@ -9,14 +9,14 @@ import type { DataProvider } from "./provider";
 import { assetCatalog, catalogBySymbol, DEFAULT_WATCHLIST, type CatalogAsset } from "@/data/assetCatalog";
 import { sampleAssets } from "@/data/sampleAssets";
 import { sampleCandles } from "@/data/sampleCandles";
-import { scoreAsset } from "@/lib/signal-engine";
+import { scoreAsset, MIN_CANDLES } from "@/lib/signal-engine";
 import { STYLE_CONFIG, type TradingStyle } from "@/lib/tradingStyle";
 import * as binance from "./binance";
 import * as twelveData from "./twelve-data";
 
-function scoreOnto(base: Asset, candles: Candle[] | null): Asset {
-  if (!candles || candles.length < 50) return base;
-  const { score, signal, stopSuggestion, breakdown, indicators } = scoreAsset(candles);
+function scoreOnto(base: Asset, candles: Candle[] | null, style: TradingStyle): Asset {
+  if (!candles || candles.length < MIN_CANDLES) return base;
+  const { score, signal, stopSuggestion, breakdown, indicators } = scoreAsset(candles, style);
   return {
     ...base,
     score,
@@ -33,7 +33,8 @@ function scoreOnto(base: Asset, candles: Candle[] | null): Asset {
   };
 }
 
-// SAMPLE fallback for one catalog asset (uses sample daily data if we have it).
+// SAMPLE fallback for one catalog asset. Sample candles are daily, so they are
+// always scored with the "swing" thresholds regardless of the selected style.
 function sampleAsset(cat: CatalogAsset): Asset {
   const s = sampleAssets.find((a) => a.symbol === cat.symbol);
   const base: Asset = s
@@ -47,7 +48,7 @@ function sampleAsset(cat: CatalogAsset): Asset {
         currency: cat.currency,
         isSample: true,
       };
-  return scoreOnto(base, sampleCandles[cat.symbol] ?? null);
+  return scoreOnto(base, sampleCandles[cat.symbol] ?? null, "swing");
 }
 
 async function fetchLive(cat: CatalogAsset, style: TradingStyle) {
@@ -79,7 +80,7 @@ async function buildAsset(cat: CatalogAsset, style: TradingStyle): Promise<Asset
       currency: cat.currency,
       isSample: false,
     };
-    return scoreOnto(live, candles);
+    return scoreOnto(live, candles, style);
   }
   return sampleAsset(cat);
 }

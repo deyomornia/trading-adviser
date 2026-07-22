@@ -69,7 +69,7 @@ export default async function AssetDetailPage({
 
   if (!asset || !candles) notFound();
 
-  const result = scoreAsset(candles);
+  const result = scoreAsset(candles, style);
   const reasons = explainScore(result);
   const up = asset.dailyChangePct >= 0;
 
@@ -195,7 +195,7 @@ export default async function AssetDetailPage({
           </ul>
 
           <Link
-            href="/trade-plan"
+            href={`/trade-plan?symbol=${asset.symbol}&entry=${asset.price}`}
             className="mt-4 inline-block rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
           >
             Plan a trade for this →

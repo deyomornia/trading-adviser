@@ -50,39 +50,50 @@ export async function addTrade(formData: FormData) {
 
 export async function closeTrade(formData: FormData) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
 
   const id = String(formData.get("id") ?? "");
   const exit = num(formData.get("exit"));
   if (!id || exit === null) return;
 
-  // Load the trade to compute profit/loss (RLS ensures it's the user's own).
+  // Load the trade to compute profit/loss. Scope to the user's own row
+  // (belt-and-suspenders alongside RLS).
   const { data: trade } = await supabase
     .from("trades")
     .select("entry, direction, position_size")
     .eq("id", id)
+    .eq("user_id", user.id)
     .single();
 
   let result: number | null = null;
   if (trade) {
     const perUnit =
       trade.direction === "long" ? exit - trade.entry : trade.entry - exit;
-    // If a position size was recorded, give a currency P/L; otherwise leave null.
     result = trade.position_size != null ? +(perUnit * trade.position_size).toFixed(2) : null;
   }
 
   await supabase
     .from("trades")
     .update({ status: "closed", exit, result, closed_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", user.id);
 
   revalidatePath("/journal");
 }
 
 export async function deleteTrade(formData: FormData) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 
-  await supabase.from("trades").delete().eq("id", id);
+  await supabase.from("trades").delete().eq("id", id).eq("user_id", user.id);
   revalidatePath("/journal");
 }

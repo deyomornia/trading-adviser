@@ -130,7 +130,8 @@ export default async function PortfolioPage() {
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Positions
               </h2>
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[420px] text-sm">
                 <thead>
                   <tr className="text-left text-slate-500">
                     <th className="pb-2 font-medium">Symbol</th>
@@ -156,6 +157,7 @@ export default async function PortfolioPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
               <p className="mt-3 text-xs text-slate-400">
                 “—” means no position size or stop-loss was recorded for that trade.
               </p>

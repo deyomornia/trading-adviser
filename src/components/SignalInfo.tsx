@@ -1,9 +1,11 @@
 "use client";
 
-// The Signal badge, click to open a "Why this signal?" card that explains the
-// verdict and shows this asset's actual parameters (trend, momentum, MACD).
+// The Signal badge; click to open a "Why this signal?" card explaining the
+// verdict and this asset's actual parameters. The card renders in a portal so
+// it's never clipped by scrollable tables, and closes on Escape or click-away.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { SignalVerdict, SignalDetail } from "@/types";
 
 function badgeColor(signal: SignalVerdict) {
@@ -39,6 +41,8 @@ function Bar({ label, value, max, hint }: { label: string; value: number; max: n
   );
 }
 
+const CARD_WIDTH = 288; // w-72
+
 export default function SignalInfo({
   signal,
   score,
@@ -48,14 +52,35 @@ export default function SignalInfo({
   score?: number;
   detail?: SignalDetail;
 }) {
-  const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const open = pos !== null;
 
-  const trendHint =
-    detail && detail.emaDiffPct > 0
-      ? `Uptrend — 20-day avg ${detail.emaDiffPct}% above the 50-day`
-      : detail
-      ? `Weak/again downtrend — 20-day avg ${detail.emaDiffPct}% vs 50-day`
-      : "";
+  function toggle() {
+    if (open) {
+      setPos(null);
+      return;
+    }
+    const r = btnRef.current?.getBoundingClientRect();
+    if (!r) return;
+    let left = r.left;
+    if (left + CARD_WIDTH > window.innerWidth - 8) left = window.innerWidth - CARD_WIDTH - 8;
+    if (left < 8) left = 8;
+    setPos({ top: r.bottom + 8, left });
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPos(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const trendHint = detail
+    ? detail.emaDiffPct > 0
+      ? `Uptrend — 20-avg ${detail.emaDiffPct}% above the 50-avg`
+      : `Flat/down — 20-avg ${detail.emaDiffPct}% vs 50-avg`
+    : "";
   const momentumHint = detail ? `RSI ${detail.rsi}` : "";
   const macdHint = detail
     ? detail.macdHistogram > 0
@@ -64,10 +89,11 @@ export default function SignalInfo({
     : "";
 
   return (
-    <span className="relative inline-block">
+    <>
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${badgeColor(signal)} cursor-pointer hover:opacity-80`}
         aria-label="Why this signal?"
       >
@@ -75,43 +101,49 @@ export default function SignalInfo({
         <span className="text-[10px] opacity-70">ⓘ</span>
       </button>
 
-      {open && (
-        <>
-          {/* click-away backdrop */}
-          <span className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-20 mt-2 w-72 rounded-lg border border-slate-200 bg-white p-3 text-left shadow-lg">
-            <div className="flex items-center justify-between">
-              <span className={`rounded px-2 py-0.5 text-xs font-medium ${badgeColor(signal)}`}>
-                {signal}
-              </span>
-              {score !== undefined && (
-                <span className="text-sm font-bold tabular-nums text-slate-900">
-                  {score}
-                  <span className="text-xs font-normal text-slate-400">/100</span>
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setPos(null)} />
+            <div
+              role="dialog"
+              className="fixed z-50 w-72 rounded-lg border border-slate-200 bg-white p-3 text-left shadow-lg"
+              style={{ top: pos.top, left: pos.left }}
+            >
+              <div className="flex items-center justify-between">
+                <span className={`rounded px-2 py-0.5 text-xs font-medium ${badgeColor(signal)}`}>
+                  {signal}
                 </span>
-              )}
-            </div>
-
-            <p className="mt-2 text-xs leading-relaxed text-slate-600">
-              {VERDICT_MEANING[signal]}
-            </p>
-
-            {detail && (
-              <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
-                <Bar label="Trend" value={detail.trendPts} max={35} hint={trendHint} />
-                <Bar label="Momentum" value={detail.momentumPts} max={35} hint={momentumHint} />
-                <Bar label="MACD" value={detail.macdPts} max={30} hint={macdHint} />
+                {score !== undefined && (
+                  <span className="text-sm font-bold tabular-nums text-slate-900">
+                    {score}
+                    <span className="text-xs font-normal text-slate-400">/100</span>
+                  </span>
+                )}
               </div>
-            )}
 
-            <p className="mt-3 border-t border-slate-100 pt-2 text-[11px] leading-relaxed text-slate-400">
-              A “Buy Candidate” needs a score of 65+, a clear uptrend, and a valid
-              stop-loss — otherwise it’s downgraded to “Wait”. Decision-support only,
-              not financial advice.
-            </p>
-          </div>
-        </>
-      )}
-    </span>
+              <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                {VERDICT_MEANING[signal]}
+              </p>
+
+              {detail && (
+                <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                  <Bar label="Trend" value={detail.trendPts} max={35} hint={trendHint} />
+                  <Bar label="Momentum" value={detail.momentumPts} max={35} hint={momentumHint} />
+                  <Bar label="MACD" value={detail.macdPts} max={30} hint={macdHint} />
+                </div>
+              )}
+
+              <p className="mt-3 border-t border-slate-100 pt-2 text-[11px] leading-relaxed text-slate-400">
+                A “Buy Candidate” needs a strong score, a clear uptrend for the chosen
+                timeframe, and a valid stop-loss — otherwise it’s downgraded to “Wait”.
+                Decision-support only, not financial advice.
+              </p>
+            </div>
+          </>,
+          document.body
+        )}
+    </>
   );
 }

@@ -1,8 +1,9 @@
 import { getTrades } from "@/lib/journal";
 import { getUserTier } from "@/lib/tier";
 import { canAccess } from "@/lib/access";
-import { addTrade, closeTrade, deleteTrade } from "./actions";
+import { addTrade, closeTrade } from "./actions";
 import UpgradePrompt from "@/components/UpgradePrompt";
+import DeleteTradeButton from "@/components/DeleteTradeButton";
 import type { Trade } from "@/types";
 
 function fmt(n: number | null) {
@@ -107,15 +108,7 @@ function OpenTradeRow({ trade }: { trade: Trade }) {
               Close
             </button>
           </form>
-          <form action={deleteTrade}>
-            <input type="hidden" name="id" value={trade.id} />
-            <button
-              type="submit"
-              className="rounded-md px-2 py-1.5 text-sm text-slate-400 hover:text-red-600"
-            >
-              Delete
-            </button>
-          </form>
+          <DeleteTradeButton id={trade.id} />
         </div>
       </div>
     </div>
@@ -146,15 +139,7 @@ function ClosedTradeRow({ trade }: { trade: Trade }) {
         ) : (
           <span className="text-sm text-slate-400">no size recorded</span>
         )}
-        <form action={deleteTrade}>
-          <input type="hidden" name="id" value={trade.id} />
-          <button
-            type="submit"
-            className="rounded-md px-2 py-1.5 text-sm text-slate-400 hover:text-red-600"
-          >
-            Delete
-          </button>
-        </form>
+        <DeleteTradeButton id={trade.id} />
       </div>
     </div>
   );

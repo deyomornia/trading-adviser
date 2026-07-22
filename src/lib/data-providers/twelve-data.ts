@@ -4,8 +4,17 @@
 // back to SAMPLE data (never mislabels sample as live).
 
 import type { Candle } from "@/data/sampleCandles";
+import { cleanCandles } from "./util";
 
 const BASE = "https://api.twelvedata.com";
+
+// Twelve Data returns "2026-06-29" (daily) or "2026-06-29 14:00:00" (intraday,
+// space-separated, no timezone). Normalize to an ISO UTC timestamp so parsing
+// is consistent across engines and timeframes.
+function parseTime(datetime: string): number {
+  const iso = datetime.includes(" ") ? datetime.replace(" ", "T") + "Z" : datetime + "T00:00:00Z";
+  return Math.floor(Date.parse(iso) / 1000);
+}
 const REVALIDATE_SECONDS = 900; // 15 min — commodities move slowly, saves quota
 
 export function hasTwelveDataKey(): boolean {
@@ -53,18 +62,17 @@ export async function fetchCandles(
     if (!res.ok) return null;
     const j = await res.json();
     if (j.status === "error" || !Array.isArray(j.values)) return null;
-    // Twelve Data returns newest-first; reverse to oldest-first for the engine.
-    const candles: Candle[] = j.values
-      .map((v: Record<string, string>) => ({
-        time: Math.floor(Date.parse(v.datetime) / 1000),
-        open: Number(v.open),
-        high: Number(v.high),
-        low: Number(v.low),
-        close: Number(v.close),
-        volume: Number(v.volume ?? 0),
-      }))
-      .reverse();
-    return candles.length ? candles : null;
+    // Twelve Data returns newest-first; cleanCandles sorts oldest-first for us.
+    const candles: Candle[] = j.values.map((v: Record<string, string>) => ({
+      time: parseTime(v.datetime),
+      open: Number(v.open),
+      high: Number(v.high),
+      low: Number(v.low),
+      close: Number(v.close),
+      volume: Number(v.volume ?? 0),
+    }));
+    const clean = cleanCandles(candles);
+    return clean.length ? clean : null;
   } catch {
     return null;
   }

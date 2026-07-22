@@ -36,8 +36,8 @@ export default function AssetTable({
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </h2>
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500">
               <th className="px-4 py-2 font-medium">Asset</th>

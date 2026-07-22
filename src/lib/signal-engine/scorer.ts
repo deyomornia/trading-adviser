@@ -4,9 +4,30 @@
 //   If any condition fails the verdict downgrades to "Wait".
 
 import type { Candle } from "@/data/sampleCandles";
+import type { TradingStyle } from "@/lib/tradingStyle"; // type-only: no runtime import
 import { ema, rsi, macd } from "./indicators";
 
 export type SignalVerdict = "Buy Candidate" | "Wait" | "Avoid";
+
+// Enough candles for EMA-50 + MACD (26+9) to be warmed up before we score.
+export const MIN_CANDLES = 55;
+
+// Trend thresholds (EMA-20 vs EMA-50 gap, in %) scale with the timeframe: the
+// gap between averages is naturally much smaller on hourly bars than on weekly.
+// Without this, "Buy Candidate" was almost impossible on Day and too easy on
+// Position. strong/mild/up feed the trend score; buyGate/flatFloor gate the verdict.
+interface TrendThresholds {
+  strong: number;
+  mild: number;
+  up: number;
+  flatFloor: number; // below this = downtrend (Avoid)
+  buyGate: number;   // EMA gap needed to allow "Buy Candidate"
+}
+const TREND_THRESHOLDS: Record<TradingStyle, TrendThresholds> = {
+  day: { strong: 1.0, mild: 0.4, up: 0, flatFloor: -0.7, buyGate: 1.0 },
+  swing: { strong: 3, mild: 1, up: 0, flatFloor: -2, buyGate: 3 },
+  position: { strong: 6, mild: 2, up: 0, flatFloor: -3, buyGate: 6 },
+};
 
 export interface ScoreResult {
   score: number;
@@ -36,7 +57,7 @@ export interface ExplanationPoint {
   tone: "good" | "neutral" | "bad";
 }
 
-export function scoreAsset(candles: Candle[]): ScoreResult {
+export function scoreAsset(candles: Candle[], style: TradingStyle = "swing"): ScoreResult {
   const closes = candles.map((c) => c.close);
   const lows   = candles.map((c) => c.low);
 
@@ -48,46 +69,52 @@ export function scoreAsset(candles: Candle[]): ScoreResult {
   const last = closes.length - 1;
   const curEma20 = ema20[last];
   const curEma50 = ema50[last];
-  const curRsi   = rsiArr[last];
+  const curRsi   = Number.isFinite(rsiArr[last]) ? rsiArr[last] : 50;
   const curMacd  = macdLine[last];
   const curSig   = signalLine[last];
-  const curHist  = histogram[last];
-  const prevHist = histogram[last - 1];
+  const curHist  = Number.isFinite(histogram[last]) ? histogram[last] : 0;
+  const prevHist = last >= 1 && Number.isFinite(histogram[last - 1]) ? histogram[last - 1] : curHist;
 
-  // ── Trend: EMA-20 vs EMA-50 (0–35 pts) ─────────────────────────────────
-  const emaDiffPct = ((curEma20 - curEma50) / curEma50) * 100;
+  const t = TREND_THRESHOLDS[style];
+
+  // ── Trend: EMA-20 vs EMA-50 gap % (0–35 pts) ───────────────────────────
+  // Guard against a non-finite or ~zero EMA-50 (treat as flat / no trend).
+  const emaDiffPct =
+    Number.isFinite(curEma20) && Number.isFinite(curEma50) && curEma50 > 0
+      ? ((curEma20 - curEma50) / curEma50) * 100
+      : 0;
   const trendScore =
-    emaDiffPct > 3  ? 35 :
-    emaDiffPct > 1  ? 26 :
-    emaDiffPct > 0  ? 18 :
-    emaDiffPct > -2 ?  8 : 0;
+    emaDiffPct > t.strong    ? 35 :
+    emaDiffPct > t.mild      ? 26 :
+    emaDiffPct > t.up        ? 18 :
+    emaDiffPct > t.flatFloor ?  8 : 0;
 
   // ── Momentum: RSI linearly scaled 30→0 pts, 70→35 pts (0–35 pts) ────────
   const momentumScore = Math.max(0, Math.min(35, Math.round((curRsi - 30) * 35 / 40)));
 
   // ── MACD (0–30 pts) ──────────────────────────────────────────────────────
+  const macdOk = Number.isFinite(curMacd) && Number.isFinite(curSig);
   const macdScore =
-    curMacd > curSig && curHist > 0 && curHist >= prevHist ? 30 :
-    curMacd > curSig && curHist > 0                        ? 20 :
-    curMacd > curSig                                       ? 12 :
-    curHist > prevHist                                     ?  8 : 0;
+    macdOk && curMacd > curSig && curHist > 0 && curHist >= prevHist ? 30 :
+    macdOk && curMacd > curSig && curHist > 0                        ? 20 :
+    macdOk && curMacd > curSig                                       ? 12 :
+    curHist > prevHist                                               ?  8 : 0;
 
   const score = Math.min(100, trendScore + momentumScore + macdScore);
 
   // Stop suggestion: lowest low of the last 20 candles (recent support)
-  const recentLows = lows.slice(-20);
-  const stopSuggestion = +Math.min(...recentLows).toFixed(2);
+  const recentLows = lows.slice(-20).filter((l) => Number.isFinite(l) && l > 0);
+  const stopSuggestion = recentLows.length ? +Math.min(...recentLows).toFixed(2) : 0;
 
   const lastClose = closes[last];
   const validStop = stopSuggestion > 0 && stopSuggestion < lastClose;
 
-  // Hard rules — EMA gap must be clearly positive (>3%) to call "Buy Candidate".
-  // Low-vol assets (gold, copper) can have inflated RSI yet flat trends, so the
-  // tighter EMA filter prevents false positives.
+  // Hard rules — the EMA gap must clear the timeframe's buy gate to be a
+  // "Buy Candidate"; a gap below the flat floor is a downtrend → "Avoid".
   let signal: SignalVerdict;
-  if (score >= 65 && emaDiffPct > 3 && validStop) {
+  if (score >= 65 && emaDiffPct > t.buyGate && validStop) {
     signal = "Buy Candidate";
-  } else if (score < 40 || emaDiffPct < -2) {
+  } else if (score < 40 || emaDiffPct < t.flatFloor) {
     signal = "Avoid";
   } else {
     signal = "Wait";
