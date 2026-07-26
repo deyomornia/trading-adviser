@@ -36,8 +36,12 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
       free sees top 3, Pro unlocks all 15 ("screener-full" in access.ts). Live-data-only (never
       ranks SAMPLE assets).
 - [x] Admin panel — /admin (owner-only via locked profiles.role + isAdmin() + service-role
-      reads/writes): all users with joined/last-sign-in/plan, +7d/+30d Pro grants, Revoke.
-      Needs supabase/admin-role.sql run once with the owner's email.
+      reads/writes): all users with joined/last-sign-in/plan, +7d/+30d Pro grants, Revoke,
+      suspend/unsuspend, type-to-confirm delete, stats + search. admin-role.sql run.
+- [x] Rebrand to "DG Trading Adviser" (title, nav, Pro pages, PayMongo checkout line item).
+- [x] "Midnight desk" redesign — dark/light toggle (dark default, cookie-persisted), ink/accent
+      tokens, theme-aware chart, mono numerals, sparklines on all rows, ScoreRing gauge,
+      DG candlestick logo + app icon.
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
