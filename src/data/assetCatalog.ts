@@ -18,14 +18,21 @@ export interface CatalogAsset {
 }
 
 // Crypto — all live via Binance's public API (no key needed).
+// Every pair below is verified to exist as <SYMBOL>USDT on Binance.
 const CRYPTO: CatalogAsset[] = [
   ["BTC", "Bitcoin"], ["ETH", "Ethereum"], ["SOL", "Solana"], ["BNB", "BNB"],
   ["XRP", "XRP"], ["ADA", "Cardano"], ["DOGE", "Dogecoin"], ["AVAX", "Avalanche"],
-  ["DOT", "Polkadot"], ["LINK", "Chainlink"], ["MATIC", "Polygon"], ["LTC", "Litecoin"],
+  ["DOT", "Polkadot"], ["LINK", "Chainlink"], ["POL", "Polygon"], ["LTC", "Litecoin"],
   ["TRX", "TRON"], ["UNI", "Uniswap"], ["ATOM", "Cosmos"], ["XLM", "Stellar"],
   ["ETC", "Ethereum Classic"], ["FIL", "Filecoin"], ["NEAR", "NEAR Protocol"],
   ["ALGO", "Algorand"], ["VET", "VeChain"], ["ICP", "Internet Computer"],
   ["SAND", "The Sandbox"], ["AAVE", "Aave"],
+  ["SHIB", "Shiba Inu"], ["PEPE", "Pepe"], ["ARB", "Arbitrum"], ["OP", "Optimism"],
+  ["APT", "Aptos"], ["SUI", "Sui"], ["INJ", "Injective"], ["TON", "Toncoin"],
+  ["HBAR", "Hedera"], ["RENDER", "Render"], ["TAO", "Bittensor"], ["FET", "Fetch.ai"],
+  ["GRT", "The Graph"], ["IMX", "Immutable"], ["LDO", "Lido DAO"], ["STX", "Stacks"],
+  ["RUNE", "THORChain"], ["EGLD", "MultiversX"], ["THETA", "Theta Network"],
+  ["XTZ", "Tezos"], ["GALA", "Gala"],
 ].map(([symbol, name]) => ({
   symbol,
   name,

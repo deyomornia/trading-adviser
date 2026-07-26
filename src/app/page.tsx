@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { dataProvider } from "@/lib/data-providers";
 import { getWatchlistSymbols } from "@/lib/watchlist";
 import { getTradingStyle } from "@/lib/tradingStyle";
 import { DEFAULT_WATCHLIST } from "@/data/assetCatalog";
 import AssetTable from "@/components/AssetTable";
 import TradingStyleSelector from "@/components/TradingStyleSelector";
+import TopOpportunities from "@/components/TopOpportunities";
 
 export default async function DashboardPage() {
   // Show the user's chosen watchlist (or a starter set if they have none / are
@@ -77,6 +79,15 @@ export default async function DashboardPage() {
           {commodities.length > 0 && <AssetTable title="Commodities" assets={commodities} />}
         </div>
       )}
+
+      {/* Top Opportunities — scans the whole catalog for this style; streams in */}
+      <Suspense
+        fallback={
+          <p className="mt-10 text-sm text-slate-400">Scanning the market for top opportunities…</p>
+        }
+      >
+        <TopOpportunities style={style} watchlist={chosen} />
+      </Suspense>
     </div>
   );
 }

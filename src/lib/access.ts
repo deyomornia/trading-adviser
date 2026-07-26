@@ -9,12 +9,15 @@ export type Feature =
   | "asset-detail"
   | "trade-plan"
   | "journal"
-  | "portfolio";
+  | "portfolio"
+  | "screener-full";
 
 // Phase B split (chosen 2026-07-13):
 //   FREE: Dashboard + Asset Detail + Trade Plan (view/plan any asset)
 //   PAID: Trade Journal + Portfolio (the personal tracking tools)
-const PAID_ONLY: Feature[] = ["journal", "portfolio"];
+// "screener-full" (2026-07-26): free tier sees the top 3 opportunities;
+// Pro unlocks the full ranked list.
+const PAID_ONLY: Feature[] = ["journal", "portfolio", "screener-full"];
 
 export function canAccess(tier: Tier, feature: Feature): boolean {
   if (!PAID_ONLY.includes(feature)) return true; // free feature
@@ -28,4 +31,5 @@ export const FEATURE_LABEL: Record<Feature, string> = {
   "trade-plan": "Trade Plan",
   journal: "Trade Journal",
   portfolio: "Portfolio",
+  "screener-full": "Top Opportunities (full list)",
 };
