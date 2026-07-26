@@ -25,6 +25,7 @@ const supabaseConfigured = Boolean(
 
 function AuthArea() {
   const [email, setEmail] = useState<string | null>(null);
+  const [admin, setAdmin] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -34,13 +35,29 @@ function AuthArea() {
     }
     const supabase = createClient();
 
+    // Visibility only — /admin is enforced server-side regardless.
+    const loadRole = async (userId: string | undefined) => {
+      if (!userId) {
+        setAdmin(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+      setAdmin(data?.role === "admin");
+    };
+
     supabase.auth.getUser().then(({ data }) => {
       setEmail(data.user?.email ?? null);
       setReady(true);
+      loadRole(data.user?.id);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setEmail(session?.user?.email ?? null);
+      loadRole(session?.user?.id);
     });
 
     return () => sub.subscription.unsubscribe();
@@ -52,6 +69,14 @@ function AuthArea() {
   if (email) {
     return (
       <div className="ml-auto flex items-center gap-3">
+        {admin && (
+          <Link
+            href="/admin"
+            className="rounded-md bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
+          >
+            Admin
+          </Link>
+        )}
         <span className="hidden text-sm text-slate-500 sm:inline">{email}</span>
         <form action={signOut}>
           <button
