@@ -20,6 +20,8 @@ revoke update (role) on public.profiles from anon, authenticated;
 
 -- 3. Extend the protected-columns trigger to also cover `role`
 --    (replaces the version from billing-lock.sql; same trigger stays attached).
+--    Blocks exactly the browser-side roles (anon/authenticated); the dashboard
+--    SQL editor (postgres) and the server key (service_role) pass through.
 create or replace function public.block_billing_self_update()
 returns trigger
 language plpgsql
@@ -29,8 +31,7 @@ begin
   if (new.tier is distinct from old.tier
       or new.paid_until is distinct from old.paid_until
       or new.role is distinct from old.role)
-     and current_setting('role', true) <> 'service_role'
-     and current_setting('request.jwt.claim.role', true) is distinct from 'service_role'
+     and coalesce(current_setting('role', true), 'none') in ('anon', 'authenticated')
   then
     -- Silently keep the protected values instead of erroring the whole update.
     new.tier := old.tier;

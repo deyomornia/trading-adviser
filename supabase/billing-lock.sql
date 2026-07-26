@@ -15,8 +15,11 @@ revoke update (tier, paid_until) on public.profiles from anon, authenticated;
 -- (Users may still update other columns of their own row, e.g. pending_checkout_id,
 --  which the checkout flow needs. The service_role bypasses this and RLS.)
 
--- Belt-and-suspenders: reject any tier/paid_until change that doesn't come from
--- the service role, even if a future GRANT re-opens the column.
+-- Belt-and-suspenders: reject any tier/paid_until change coming from the
+-- browser-side roles (anon/authenticated), even if a future GRANT re-opens the
+-- column. The dashboard SQL editor (postgres) and the server key (service_role)
+-- pass through. NOTE: superseded by admin-role.sql, which extends this same
+-- function to also protect `role` — run that after this.
 create or replace function public.block_billing_self_update()
 returns trigger
 language plpgsql
@@ -25,8 +28,7 @@ as $$
 begin
   if (new.tier is distinct from old.tier
       or new.paid_until is distinct from old.paid_until)
-     and current_setting('role', true) <> 'service_role'
-     and current_setting('request.jwt.claim.role', true) is distinct from 'service_role'
+     and coalesce(current_setting('role', true), 'none') in ('anon', 'authenticated')
   then
     -- Silently keep the old billing values instead of erroring the whole update.
     new.tier := old.tier;
