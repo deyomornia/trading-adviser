@@ -9,7 +9,7 @@ export default function UpgradePrompt({ feature }: { feature: string }) {
         Pro feature
       </div>
       <h2 className="mt-2 text-xl font-semibold text-slate-900">
-        {feature} is part of Trading Adviser Pro
+        {feature} is part of DG Trading Adviser Pro
       </h2>
       <p className="mt-2 text-sm text-slate-600">
         Unlock the {feature.toLowerCase()} and all personal tracking tools.

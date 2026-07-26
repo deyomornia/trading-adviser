@@ -107,7 +107,7 @@ export default function Nav() {
     <header className="border-b border-slate-200 bg-white">
       <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-1 px-4 py-3">
         <span className="mr-4 font-semibold tracking-tight text-slate-900">
-          Trading Adviser
+          DG Trading Adviser
         </span>
         {links.map((link) => {
           const active =

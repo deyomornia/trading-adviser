@@ -14,7 +14,7 @@ export default async function UpgradePage({
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="text-2xl font-semibold text-slate-900">Trading Adviser Pro</h1>
+      <h1 className="text-2xl font-semibold text-slate-900">DG Trading Adviser Pro</h1>
       <p className="mt-2 text-slate-600">
         Unlock the personal tracking tools. Everything else stays free.
       </p>
