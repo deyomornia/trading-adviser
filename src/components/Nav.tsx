@@ -5,8 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { signOut } from "@/app/auth/actions";
+import Logo from "@/components/Logo";
+import ThemeToggle from "@/components/ThemeToggle";
 
-// The 6 pages of the app. Add or rename here and the whole menu updates.
+// The pages of the app. Add or rename here and the whole menu updates.
 const links = [
   { href: "/", label: "Dashboard" },
   { href: "/watchlist", label: "Watchlist" },
@@ -68,20 +70,21 @@ function AuthArea() {
 
   if (email) {
     return (
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2">
         {admin && (
           <Link
             href="/admin"
-            className="rounded-md bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
+            className="rounded-md bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-accent/10 dark:text-accent dark:hover:bg-accent/20"
           >
             Admin
           </Link>
         )}
-        <span className="hidden text-sm text-slate-500 sm:inline">{email}</span>
+        <span className="hidden text-sm text-slate-500 dark:text-ink-300 sm:inline">{email}</span>
+        <ThemeToggle />
         <form action={signOut}>
           <button
             type="submit"
-            className="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            className="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-ink-100"
           >
             Sign out
           </button>
@@ -91,12 +94,15 @@ function AuthArea() {
   }
 
   return (
-    <Link
-      href="/login"
-      className="ml-auto rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800"
-    >
-      Sign in
-    </Link>
+    <div className="ml-auto flex items-center gap-2">
+      <ThemeToggle />
+      <Link
+        href="/login"
+        className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 dark:bg-accent dark:text-ink-950 dark:hover:bg-accent/90"
+      >
+        Sign in
+      </Link>
+    </div>
   );
 }
 
@@ -104,11 +110,14 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="border-b border-slate-200 bg-white dark:border-ink-700 dark:bg-ink-900">
       <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-1 px-4 py-3">
-        <span className="mr-4 font-semibold tracking-tight text-slate-900">
-          DG Trading Adviser
-        </span>
+        <Link href="/" className="mr-4 flex items-center gap-2">
+          <Logo />
+          <span className="font-semibold tracking-tight text-slate-900 dark:text-ink-100">
+            DG Trading Adviser
+          </span>
+        </Link>
         {links.map((link) => {
           const active =
             link.href === "/"
@@ -121,8 +130,8 @@ export default function Nav() {
               className={
                 "rounded-md px-3 py-1.5 text-sm transition-colors " +
                 (active
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900")
+                  ? "bg-slate-900 text-white dark:bg-accent dark:text-ink-950"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-ink-100")
               }
             >
               {link.label}

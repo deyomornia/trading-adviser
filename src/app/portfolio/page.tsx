@@ -24,10 +24,10 @@ function typeOf(symbol: string): AssetClass {
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
-      <div className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{value}</div>
-      {hint && <div className="mt-0.5 text-xs text-slate-400">{hint}</div>}
+    <div className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
+      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-ink-300">{label}</div>
+      <div className="mt-1 text-2xl font-bold font-mono tabular-nums text-slate-900 dark:text-ink-100">{value}</div>
+      {hint && <div className="mt-0.5 text-xs text-slate-400 dark:text-ink-300/70">{hint}</div>}
     </div>
   );
 }
@@ -37,8 +37,8 @@ export default async function PortfolioPage() {
 
   const header = (
     <>
-      <h1 className="text-2xl font-semibold text-slate-900">Portfolio</h1>
-      <p className="mt-2 max-w-2xl text-slate-600">
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-ink-100">Portfolio</h1>
+      <p className="mt-2 max-w-2xl text-slate-600 dark:text-ink-300">
         Your overall exposure from open trades, your total risk if every stop-loss
         is hit, and warnings when you are too concentrated in one position.
       </p>
@@ -64,9 +64,9 @@ export default async function PortfolioPage() {
       {header}
 
       {openTrades.length === 0 ? (
-        <p className="mt-8 rounded-lg border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-400">
+        <p className="mt-8 rounded-lg border border-dashed border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-8 text-center text-sm text-slate-400 dark:text-ink-300/70">
           No open trades yet. Log a trade in the{" "}
-          <Link href="/journal" className="font-medium text-slate-600 underline">
+          <Link href="/journal" className="font-medium text-slate-600 dark:text-ink-300 underline">
             Trade Journal
           </Link>{" "}
           and it will show up here.
@@ -94,7 +94,7 @@ export default async function PortfolioPage() {
               {summary.warnings.map((w, i) => (
                 <div
                   key={i}
-                  className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                  className="rounded-md border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300"
                 >
                   ⚠️ {w}
                 </div>
@@ -104,21 +104,21 @@ export default async function PortfolioPage() {
 
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             {/* Exposure by class */}
-            <section className="rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <section className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
                 Exposure by asset class
               </h2>
               <div className="space-y-3">
                 {summary.byClass.map((c) => (
                   <div key={c.type}>
                     <div className="mb-1 flex justify-between text-sm">
-                      <span className="text-slate-700">{CLASS_LABEL[c.type]}</span>
-                      <span className="tabular-nums text-slate-500">
+                      <span className="text-slate-700 dark:text-ink-100/90">{CLASS_LABEL[c.type]}</span>
+                      <span className="font-mono tabular-nums text-slate-500 dark:text-ink-300">
                         {fmt(c.exposure)} · {c.pct}%
                       </span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-slate-800" style={{ width: `${c.pct}%` }} />
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-ink-800">
+                      <div className="h-full rounded-full bg-slate-800 dark:bg-accent" style={{ width: `${c.pct}%` }} />
                     </div>
                   </div>
                 ))}
@@ -126,14 +126,14 @@ export default async function PortfolioPage() {
             </section>
 
             {/* Positions */}
-            <section className="rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <section className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
                 Positions
               </h2>
               <div className="overflow-x-auto">
               <table className="w-full min-w-[420px] text-sm">
                 <thead>
-                  <tr className="text-left text-slate-500">
+                  <tr className="text-left text-slate-500 dark:text-ink-300">
                     <th className="pb-2 font-medium">Symbol</th>
                     <th className="pb-2 text-right font-medium">Exposure</th>
                     <th className="pb-2 text-right font-medium">Share</th>
@@ -142,15 +142,15 @@ export default async function PortfolioPage() {
                 </thead>
                 <tbody>
                   {summary.positions.map((p, i) => (
-                    <tr key={i} className="border-t border-slate-100">
-                      <td className="py-2 font-medium text-slate-900">{p.symbol}</td>
-                      <td className="py-2 text-right tabular-nums text-slate-700">
+                    <tr key={i} className="border-t border-slate-100 dark:border-ink-700/60">
+                      <td className="py-2 font-medium text-slate-900 dark:text-ink-100">{p.symbol}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-slate-700 dark:text-ink-100/90">
                         {p.exposure > 0 ? fmt(p.exposure) : "—"}
                       </td>
-                      <td className="py-2 text-right tabular-nums text-slate-500">
+                      <td className="py-2 text-right font-mono tabular-nums text-slate-500 dark:text-ink-300">
                         {p.exposurePct}%
                       </td>
-                      <td className="py-2 text-right tabular-nums text-slate-700">
+                      <td className="py-2 text-right font-mono tabular-nums text-slate-700 dark:text-ink-100/90">
                         {p.risk != null ? fmt(p.risk) : "—"}
                       </td>
                     </tr>
@@ -158,7 +158,7 @@ export default async function PortfolioPage() {
                 </tbody>
               </table>
               </div>
-              <p className="mt-3 text-xs text-slate-400">
+              <p className="mt-3 text-xs text-slate-400 dark:text-ink-300/70">
                 “—” means no position size or stop-loss was recorded for that trade.
               </p>
             </section>

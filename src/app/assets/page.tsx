@@ -16,10 +16,10 @@ function formatPrice(price: number, currency: string) {
 
 function signalColor(signal?: SignalVerdict) {
   return signal === "Buy Candidate"
-    ? "bg-green-100 text-green-800"
+    ? "bg-green-100 dark:bg-emerald-500/15 text-green-800 dark:text-emerald-300"
     : signal === "Avoid"
-    ? "bg-red-100 text-red-800"
-    : "bg-amber-100 text-amber-800";
+    ? "bg-red-100 dark:bg-red-500/15 text-red-800 dark:text-red-300"
+    : "bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300";
 }
 
 function AssetCard({ asset }: { asset: Asset }) {
@@ -27,19 +27,19 @@ function AssetCard({ asset }: { asset: Asset }) {
   return (
     <Link
       href={`/assets/${asset.symbol}`}
-      className="block rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:border-slate-400"
+      className="block rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4 transition-colors hover:border-slate-400 dark:hover:border-accent"
     >
       <div className="flex items-start justify-between">
         <div>
-          <div className="font-medium text-slate-900">{asset.name}</div>
-          <div className="flex items-center gap-2 text-sm text-slate-400">
+          <div className="font-medium text-slate-900 dark:text-ink-100">{asset.name}</div>
+          <div className="flex items-center gap-2 text-sm text-slate-400 dark:text-ink-300/70">
             {asset.symbol}
             {asset.isSample ? (
-              <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+              <span className="rounded bg-amber-100 dark:bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300">
                 SAMPLE
               </span>
             ) : (
-              <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+              <span className="rounded bg-emerald-100 dark:bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
                 LIVE
               </span>
             )}
@@ -53,18 +53,18 @@ function AssetCard({ asset }: { asset: Asset }) {
       </div>
       <div className="mt-3 flex items-end justify-between">
         <div>
-          <div className="tabular-nums text-slate-900">
+          <div className="font-mono tabular-nums text-slate-900 dark:text-ink-100">
             {formatPrice(asset.price, asset.currency)}
           </div>
-          <div className={`text-sm ${up ? "text-emerald-600" : "text-red-600"}`}>
+          <div className={`text-sm ${up ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
             {up ? "+" : ""}
             {asset.dailyChangePct.toFixed(1)}% today
           </div>
         </div>
         {asset.score !== undefined && (
           <div className="text-right">
-            <div className="text-2xl font-bold tabular-nums text-slate-900">{asset.score}</div>
-            <div className="text-xs text-slate-400">score</div>
+            <div className="text-2xl font-bold font-mono tabular-nums text-slate-900 dark:text-ink-100">{asset.score}</div>
+            <div className="text-xs text-slate-400 dark:text-ink-300/70">score</div>
           </div>
         )}
       </div>
@@ -83,22 +83,22 @@ export default async function AssetIndexPage() {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Asset Detail</h1>
-          <p className="mt-2 max-w-2xl text-slate-600">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-ink-100">Asset Detail</h1>
+          <p className="mt-2 max-w-2xl text-slate-600 dark:text-ink-300">
             Pick an asset to study its price chart, signal score, and a
             plain-English explanation of why it scored the way it did.
           </p>
         </div>
         <Link
           href="/watchlist"
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded-md border border-slate-300 dark:border-ink-700 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-ink-100/90 hover:bg-slate-50 dark:hover:bg-ink-800"
         >
           Edit watchlist
         </Link>
       </div>
 
       <div className="mt-4">
-        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-ink-300">
           Trading style
         </span>
         <TradingStyleSelector current={style} />
@@ -106,7 +106,7 @@ export default async function AssetIndexPage() {
 
       {crypto.length > 0 && (
         <>
-          <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
             Crypto
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -119,7 +119,7 @@ export default async function AssetIndexPage() {
 
       {commodities.length > 0 && (
         <>
-          <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
             Commodities
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

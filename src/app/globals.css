@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: <html class="dark"> switches the whole app. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #f8fafc; /* slate-50 — calm, low-glare */
+  --background: #f8fafc; /* slate-50 — calm, low-glare light mode */
   --foreground: #1e293b; /* slate-800 */
+}
+
+.dark {
+  --background: #0b1220; /* ink-950 — midnight desk */
+  --foreground: #e6ebf4; /* ink-100 */
 }
 
 @theme inline {
@@ -10,6 +18,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* "Midnight desk" palette — deep blue-black exchange-terminal feel.
+     Green/red stay reserved for price direction only. */
+  --color-ink-950: #0b1220; /* page background */
+  --color-ink-900: #111a2c; /* raised panel */
+  --color-ink-800: #16213a; /* panel hover / chip */
+  --color-ink-700: #1e2a40; /* border */
+  --color-ink-300: #8a97ac; /* secondary text */
+  --color-ink-100: #e6ebf4; /* primary text */
+  --color-accent: #4da3ff;  /* ice blue — interactive elements in dark */
 }
 
 body {

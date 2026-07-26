@@ -44,8 +44,8 @@ export default function TradePlanForm({
     n === null ? "—" : n.toLocaleString(undefined, { maximumFractionDigits: 4 });
 
   const inputClass =
-    "mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-500";
-  const labelClass = "block text-sm font-medium text-slate-700";
+    "mt-1 w-full rounded-md border border-slate-300 dark:border-ink-700 bg-white dark:bg-ink-950 px-3 py-2 text-sm text-slate-900 dark:text-ink-100 outline-none focus:border-slate-500 dark:focus:border-accent";
+  const labelClass = "block text-sm font-medium text-slate-700 dark:text-ink-100/90";
 
   const canSave = symbol.trim() !== "" && Number.isFinite(num(entry));
 
@@ -65,7 +65,7 @@ export default function TradePlanForm({
 
         <div>
           <span className={labelClass}>Direction</span>
-          <div className="mt-1 inline-flex rounded-md border border-slate-300 p-0.5">
+          <div className="mt-1 inline-flex rounded-md border border-slate-300 dark:border-ink-700 p-0.5">
             {(["long", "short"] as TradeDirection[]).map((d) => (
               <button
                 key={d}
@@ -73,7 +73,7 @@ export default function TradePlanForm({
                 onClick={() => setDirection(d)}
                 className={
                   "rounded px-4 py-1.5 text-sm capitalize transition-colors " +
-                  (direction === d ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100")
+                  (direction === d ? "bg-slate-900 dark:bg-accent text-white dark:text-ink-950" : "text-slate-600 dark:text-ink-300 hover:bg-slate-100 dark:hover:bg-ink-800")
                 }
               >
                 {d}
@@ -123,8 +123,8 @@ export default function TradePlanForm({
       </div>
 
       {/* ---------- RESULTS ---------- */}
-      <div className="rounded-lg border border-slate-200 bg-white p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Result</h2>
+      <div className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-5">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">Result</h2>
 
         <dl className="mt-4 space-y-3 text-sm">
           <Row label="Amount at risk" value={money(result.amountAtRisk)} />
@@ -147,7 +147,7 @@ export default function TradePlanForm({
         {result.warnings.length > 0 && (
           <ul className="mt-5 space-y-2">
             {result.warnings.map((w, i) => (
-              <li key={i} className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              <li key={i} className="rounded-md border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
                 {w}
               </li>
             ))}
@@ -155,13 +155,13 @@ export default function TradePlanForm({
         )}
 
         {!result.canSize && result.warnings.length === 0 && (
-          <p className="mt-5 text-xs text-slate-500">
+          <p className="mt-5 text-xs text-slate-500 dark:text-ink-300">
             Enter your account size, risk %, entry and stop-loss to see a suggested position size.
           </p>
         )}
 
         {/* Save to journal (Pro) */}
-        <form action={savePlanToJournal} className="mt-5 border-t border-slate-100 pt-4">
+        <form action={savePlanToJournal} className="mt-5 border-t border-slate-100 dark:border-ink-700/60 pt-4">
           <input type="hidden" name="symbol" value={symbol} />
           <input type="hidden" name="direction" value={direction} />
           <input type="hidden" name="entry" value={entry} />
@@ -172,11 +172,11 @@ export default function TradePlanForm({
           <button
             type="submit"
             disabled={!canSave}
-            className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className="w-full rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Save to journal
           </button>
-          <p className="mt-1.5 text-center text-xs text-slate-400">
+          <p className="mt-1.5 text-center text-xs text-slate-400 dark:text-ink-300/70">
             Saving to your journal is a Pro feature.
           </p>
         </form>
@@ -197,11 +197,11 @@ function Row({
   tone?: "profit" | "loss";
 }) {
   const valueColor =
-    tone === "profit" ? "text-emerald-600" : tone === "loss" ? "text-red-600" : "text-slate-900";
+    tone === "profit" ? "text-emerald-600 dark:text-emerald-400" : tone === "loss" ? "text-red-600 dark:text-red-400" : "text-slate-900 dark:text-ink-100";
   return (
-    <div className="flex items-center justify-between border-b border-slate-100 pb-2 last:border-0">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className={"tabular-nums " + valueColor + (strong ? " font-semibold" : "")}>{value}</dd>
+    <div className="flex items-center justify-between border-b border-slate-100 dark:border-ink-700/60 pb-2 last:border-0">
+      <dt className="text-slate-500 dark:text-ink-300">{label}</dt>
+      <dd className={"font-mono tabular-nums " + valueColor + (strong ? " font-semibold" : "")}>{value}</dd>
     </div>
   );
 }

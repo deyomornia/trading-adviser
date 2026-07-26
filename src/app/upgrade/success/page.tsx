@@ -46,20 +46,20 @@ export default async function UpgradeSuccessPage() {
     <div className="mx-auto max-w-md text-center">
       {ok ? (
         <>
-          <h1 className="text-2xl font-semibold text-slate-900">You’re all set 🎉</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-ink-100">You’re all set 🎉</h1>
+          <p className="mt-2 text-slate-600 dark:text-ink-300">
             {ACCESS_DAYS} days of Pro are unlocked. Enjoy the tracking tools.
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Link
               href="/journal"
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+              className="rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
             >
               Open Trade Journal
             </Link>
             <Link
               href="/portfolio"
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-slate-300 dark:border-ink-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-ink-100/90 hover:bg-slate-50 dark:hover:bg-ink-800"
             >
               View Portfolio
             </Link>
@@ -67,8 +67,8 @@ export default async function UpgradeSuccessPage() {
         </>
       ) : (
         <>
-          <h1 className="text-2xl font-semibold text-slate-900">Almost there</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-ink-100">Almost there</h1>
+          <p className="mt-2 text-slate-600 dark:text-ink-300">
             We couldn’t confirm your payment just yet. If you completed it, give it
             a moment and refresh — or check{" "}
             <Link href="/upgrade" className="underline">

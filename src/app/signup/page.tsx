@@ -10,20 +10,20 @@ export default async function SignupPage({
 
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Create account</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-ink-100">Create account</h1>
+      <p className="mt-1 text-sm text-slate-500 dark:text-ink-300">
         Free to start. This is a decision-support tool, not financial advice.
       </p>
 
       {error && (
-        <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mt-4 rounded-md bg-red-50 dark:bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
           {error}
         </p>
       )}
 
       <form className="mt-6 space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-ink-100/90">
             Email
           </label>
           <input
@@ -32,11 +32,11 @@ export default async function SignupPage({
             type="email"
             required
             autoComplete="email"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="mt-1 w-full rounded-md border border-slate-300 dark:border-ink-700 px-3 py-2 text-sm focus:border-slate-500 dark:focus:border-accent focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-ink-100/90">
             Password
           </label>
           <input
@@ -46,21 +46,21 @@ export default async function SignupPage({
             required
             minLength={6}
             autoComplete="new-password"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="mt-1 w-full rounded-md border border-slate-300 dark:border-ink-700 px-3 py-2 text-sm focus:border-slate-500 dark:focus:border-accent focus:outline-none"
           />
-          <p className="mt-1 text-xs text-slate-400">At least 6 characters.</p>
+          <p className="mt-1 text-xs text-slate-400 dark:text-ink-300/70">At least 6 characters.</p>
         </div>
         <button
           formAction={signup}
-          className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          className="w-full rounded-md bg-slate-900 dark:bg-accent px-3 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
         >
           Create account
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p className="mt-6 text-center text-sm text-slate-500 dark:text-ink-300">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-slate-900 underline">
+        <Link href="/login" className="font-medium text-slate-900 dark:text-ink-100 underline">
           Sign in
         </Link>
       </p>

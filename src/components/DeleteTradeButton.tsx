@@ -16,7 +16,7 @@ export default function DeleteTradeButton({ id }: { id: string }) {
       <input type="hidden" name="id" value={id} />
       <button
         type="submit"
-        className="rounded-md px-2 py-1.5 text-sm text-slate-400 hover:text-red-600"
+        className="rounded-md px-2 py-1.5 text-sm text-slate-400 dark:text-ink-300/70 hover:text-red-600 dark:hover:text-red-400"
       >
         Delete
       </button>

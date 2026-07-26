@@ -27,6 +27,7 @@ export interface Asset {
   signal?: SignalVerdict;  // plain-English verdict (Phase 5)
   stopSuggestion?: number; // recent swing low for stop placement (Phase 5)
   detail?: SignalDetail;   // the parameters behind the signal (for the popover)
+  spark?: number[];        // recent closes (downsampled) for the sparkline
 }
 
 // Trade Journal (Phase 7). One record per trade the user logs.

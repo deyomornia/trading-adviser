@@ -14,6 +14,16 @@ import { STYLE_CONFIG, type TradingStyle } from "@/lib/tradingStyle";
 import * as binance from "./binance";
 import * as twelveData from "./twelve-data";
 
+// Last ~40 closes, downsampled to ≤20 points, for the row sparkline.
+function sparkFrom(candles: Candle[]): number[] {
+  const closes = candles.slice(-40).map((c) => c.close);
+  const step = Math.max(1, Math.ceil(closes.length / 20));
+  const out: number[] = [];
+  for (let i = 0; i < closes.length; i += step) out.push(closes[i]);
+  if (out[out.length - 1] !== closes[closes.length - 1]) out.push(closes[closes.length - 1]);
+  return out;
+}
+
 function scoreOnto(base: Asset, candles: Candle[] | null, style: TradingStyle): Asset {
   if (!candles || candles.length < MIN_CANDLES) return base;
   const { score, signal, stopSuggestion, breakdown, indicators } = scoreAsset(candles, style);
@@ -30,6 +40,7 @@ function scoreOnto(base: Asset, candles: Candle[] | null, style: TradingStyle): 
       rsi: indicators.rsi,
       macdHistogram: indicators.macdHistogram,
     },
+    spark: sparkFrom(candles),
   };
 }
 

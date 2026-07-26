@@ -29,6 +29,7 @@ export const mockProvider: DataProvider = {
           rsi: indicators.rsi,
           macdHistogram: indicators.macdHistogram,
         },
+        spark: candles.slice(-20).map((c) => c.close),
       };
     });
   },
