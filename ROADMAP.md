@@ -27,6 +27,14 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 - [x] Trading style selector — Day (hourly) / Swing (daily) / Position (weekly). Changes the
       candle timeframe the signals are scored on; choice stored in a cookie. Crypto has all
       timeframes (Binance, free); commodities use daily where intraday isn't on the free plan.
+- [x] App review fixes (2026-07-26) — timeframe-aware signal thresholds + proper EMA warm-up;
+      paywall bypass closed (billing-lock.sql run + SUPABASE_SERVICE_ROLE_KEY in Vercel);
+      honest watchlist badges; delete confirmation; mobile tables; Trade Plan "Save to journal"
+      + prefill; real Settings page (defaults + account).
+- [x] Top Opportunities screener — scans all live assets (catalog grown to 45 coins + Gold,
+      MATIC→POL fixed) and ranks the top 15 per trading style on the dashboard. Teaser gating:
+      free sees top 3, Pro unlocks all 15 ("screener-full" in access.ts). Live-data-only (never
+      ranks SAMPLE assets).
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
