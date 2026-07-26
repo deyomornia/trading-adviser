@@ -1,7 +1,10 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/admin-auth";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, adminConfigured } from "@/lib/supabase/admin";
-import { grantDays, revokePro } from "./actions";
+import { grantDays, revokePro, suspendUser, unsuspendUser } from "./actions";
+import DeleteUserButton from "@/components/DeleteUserButton";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +15,7 @@ interface AdminRow {
   lastSignIn: string | null;
   paidUntil: string | null;
   role: string;
+  bannedUntil: string | null;
 }
 
 function fmtDate(iso: string | null) {
@@ -31,13 +35,13 @@ async function loadUsers(): Promise<AdminRow[]> {
     admin.from("profiles").select("id, paid_until, role"),
   ]);
 
-  const bySid = new Map(
+  const byId = new Map(
     (profiles ?? []).map((p) => [p.id as string, p as { paid_until: string | null; role: string | null }])
   );
 
   return (list?.users ?? [])
     .map((u) => {
-      const p = bySid.get(u.id);
+      const p = byId.get(u.id);
       return {
         id: u.id,
         email: u.email ?? "(no email)",
@@ -45,12 +49,27 @@ async function loadUsers(): Promise<AdminRow[]> {
         lastSignIn: u.last_sign_in_at ?? null,
         paidUntil: p?.paid_until ?? null,
         role: p?.role ?? "user",
+        // banned_until is returned by the admin API but missing from the SDK type.
+        bannedUntil: (u as { banned_until?: string | null }).banned_until ?? null,
       };
     })
     .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
 }
 
-export default async function AdminPage() {
+function StatCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="text-2xl font-bold tabular-nums text-slate-900">{value}</div>
+      <div className="mt-0.5 text-xs uppercase tracking-wide text-slate-500">{label}</div>
+    </div>
+  );
+}
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   // Hard gate: only the admin ever sees this page.
   if (!(await isAdmin())) redirect("/");
 
@@ -67,32 +86,78 @@ export default async function AdminPage() {
     );
   }
 
+  const { q } = await searchParams;
+  const supabase = await createClient();
+  const {
+    data: { user: me },
+  } = await supabase.auth.getUser();
+
   const users = await loadUsers();
   const now = Date.now();
+  const week = now - 7 * 86_400_000;
+  const month = now - 30 * 86_400_000;
+
   const proCount = users.filter((u) => u.paidUntil && new Date(u.paidUntil).getTime() > now).length;
+  const newWeek = users.filter((u) => u.createdAt && new Date(u.createdAt).getTime() > week).length;
+  const newMonth = users.filter((u) => u.createdAt && new Date(u.createdAt).getTime() > month).length;
+
+  const query = (q ?? "").trim().toLowerCase();
+  const shown = query ? users.filter((u) => u.email.toLowerCase().includes(query)) : users;
 
   return (
     <div>
       <h1 className="text-2xl font-semibold text-slate-900">Admin — Users</h1>
-      <p className="mt-2 text-sm text-slate-500">
-        {users.length} account{users.length === 1 ? "" : "s"} · {proCount} with active Pro.
-        Granting or revoking days takes effect immediately.
+
+      {/* Stats */}
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatCard label="Total users" value={users.length} />
+        <StatCard label="Active Pro" value={proCount} />
+        <StatCard label="New this week" value={`+${newWeek}`} />
+        <StatCard label="New this month" value={`+${newMonth}`} />
+      </div>
+
+      {/* Search */}
+      <form method="GET" className="mt-6 flex items-center gap-2">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder="Search by email…"
+          className="w-full max-w-xs rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-500"
+        />
+        <button
+          type="submit"
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Search
+        </button>
+        {query && (
+          <Link href="/admin" className="text-sm text-slate-500 underline">
+            Clear
+          </Link>
+        )}
+      </form>
+
+      <p className="mt-3 text-sm text-slate-500">
+        Showing {shown.length} of {users.length} account{users.length === 1 ? "" : "s"}.
       </p>
 
-      <div className="mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        <table className="w-full min-w-[720px] text-sm">
+      <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full min-w-[860px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500">
               <th className="px-4 py-2 font-medium">Email</th>
               <th className="px-4 py-2 font-medium">Joined</th>
               <th className="px-4 py-2 font-medium">Last sign-in</th>
-              <th className="px-4 py-2 font-medium">Plan</th>
+              <th className="px-4 py-2 font-medium">Status</th>
               <th className="px-4 py-2 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => {
+            {shown.map((u) => {
               const isPro = u.paidUntil ? new Date(u.paidUntil).getTime() > now : false;
+              const isSuspended = u.bannedUntil ? new Date(u.bannedUntil).getTime() > now : false;
+              const isSelf = me?.id === u.id;
               return (
                 <tr key={u.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-3">
@@ -102,25 +167,33 @@ export default async function AdminPage() {
                         admin
                       </span>
                     )}
+                    {isSelf && <span className="ml-1 text-xs text-slate-400">(you)</span>}
                   </td>
                   <td className="px-4 py-3 text-slate-600">{fmtDate(u.createdAt)}</td>
                   <td className="px-4 py-3 text-slate-600">{fmtDate(u.lastSignIn)}</td>
                   <td className="px-4 py-3">
-                    {isPro ? (
-                      <span>
-                        <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                          Pro
-                        </span>{" "}
-                        <span className="text-xs text-slate-400">until {fmtDate(u.paidUntil)}</span>
-                      </span>
-                    ) : (
-                      <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                        Free
-                      </span>
-                    )}
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      {isPro ? (
+                        <>
+                          <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                            Pro
+                          </span>
+                          <span className="text-xs text-slate-400">until {fmtDate(u.paidUntil)}</span>
+                        </>
+                      ) : (
+                        <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                          Free
+                        </span>
+                      )}
+                      {isSuspended && (
+                        <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                          Suspended
+                        </span>
+                      )}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1.5">
                       {[7, 30].map((d) => (
                         <form key={d} action={grantDays}>
                           <input type="hidden" name="userId" value={u.id} />
@@ -138,11 +211,25 @@ export default async function AdminPage() {
                           <input type="hidden" name="userId" value={u.id} />
                           <button
                             type="submit"
-                            className="rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 hover:text-red-600"
+                            className="rounded-md px-2 py-1 text-xs font-medium text-slate-400 hover:text-amber-600"
                           >
                             Revoke
                           </button>
                         </form>
+                      )}
+                      {!isSelf && (
+                        <>
+                          <form action={isSuspended ? unsuspendUser : suspendUser}>
+                            <input type="hidden" name="userId" value={u.id} />
+                            <button
+                              type="submit"
+                              className="rounded-md px-2 py-1 text-xs font-medium text-slate-400 hover:text-slate-700"
+                            >
+                              {isSuspended ? "Unsuspend" : "Suspend"}
+                            </button>
+                          </form>
+                          <DeleteUserButton userId={u.id} email={u.email} />
+                        </>
                       )}
                     </div>
                   </td>
@@ -154,8 +241,10 @@ export default async function AdminPage() {
       </div>
 
       <p className="mt-3 text-xs text-slate-400">
-        “+7d / +30d” adds days on top of any remaining access. “Revoke” ends Pro
-        access now (you can re-grant anytime).
+        “+7d / +30d” adds Pro days on top of any remaining access · “Revoke” ends Pro now
+        (re-grant anytime) · “Suspend” blocks sign-in but keeps data · “Delete” permanently
+        removes the account and all its data (type-to-confirm). Your own account can’t be
+        suspended or deleted.
       </p>
     </div>
   );
