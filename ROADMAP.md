@@ -42,6 +42,11 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 - [x] "Midnight desk" redesign — dark/light toggle (dark default, cookie-persisted), ink/accent
       tokens, theme-aware chart, mono numerals, sparklines on all rows, ScoreRing gauge,
       DG candlestick logo + app icon.
+- [x] Custom domain — https://tradingadviser.dgtechsolutions.online (CNAME added via Hostinger
+      API; Vercel domain + NEXT_PUBLIC_SITE_URL + Supabase URL config updated by Deo).
+- [x] Commodities now LIVE via Yahoo Finance futures (unofficial feed, per-asset SAMPLE
+      fallback): Oil CL=F, Copper HG=F + new Silver SI=F and Natural Gas NG=F. Gold stays on
+      Twelve Data. All three trading styles supported.
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
@@ -56,7 +61,6 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 - [ ] Go-live payments: PayMongo LIVE keys + webhook on the deployed URL (needs PayMongo
       business approval); switch Supabase email confirmation back ON.
 - [ ] Phase 10 — AI plain-English explanations (needs Claude API key)
-- [ ] (Optional) upgrade Twelve Data plan to make Oil + Copper live
 
 ## Notes
 - v1 scope = crypto + commodities only. PSE stocks deferred (no clean free API).
