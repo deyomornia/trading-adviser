@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { addToWatchlist, removeFromWatchlist } from "@/app/watchlist/actions";
 
+import type { AssetSource } from "@/data/assetCatalog";
+
 export interface CatalogRow {
   symbol: string;
   name: string;
   type: "crypto" | "commodity";
-  source: "binance" | "twelvedata" | "sample";
+  source: AssetSource;
 }
 
 export default function WatchlistManager({

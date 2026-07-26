@@ -6,7 +6,7 @@
 
 import type { AssetType } from "@/types";
 
-export type AssetSource = "binance" | "twelvedata" | "sample";
+export type AssetSource = "binance" | "twelvedata" | "yahoo" | "sample";
 
 export interface CatalogAsset {
   symbol: string; // display symbol, e.g. "BTC"
@@ -42,11 +42,14 @@ const CRYPTO: CatalogAsset[] = [
   pair: `${symbol}USDT`,
 }));
 
-// Commodities — only Gold is live on the free Twelve Data plan.
+// Commodities — Gold via Twelve Data (free plan); the rest via Yahoo Finance
+// futures (unofficial feed; auto-falls back to SAMPLE on any failure).
 const COMMODITIES: CatalogAsset[] = [
   { symbol: "XAU", name: "Gold (spot oz)", type: "commodity", currency: "USD", source: "twelvedata", pair: "XAU/USD" },
-  { symbol: "WTI", name: "Crude Oil (WTI)", type: "commodity", currency: "USD", source: "sample" },
-  { symbol: "HG", name: "Copper", type: "commodity", currency: "USD", source: "sample" },
+  { symbol: "WTI", name: "Crude Oil (WTI)", type: "commodity", currency: "USD", source: "yahoo", pair: "CL=F" },
+  { symbol: "HG", name: "Copper", type: "commodity", currency: "USD", source: "yahoo", pair: "HG=F" },
+  { symbol: "SI", name: "Silver", type: "commodity", currency: "USD", source: "yahoo", pair: "SI=F" },
+  { symbol: "NG", name: "Natural Gas", type: "commodity", currency: "USD", source: "yahoo", pair: "NG=F" },
 ];
 
 export const assetCatalog: CatalogAsset[] = [...CRYPTO, ...COMMODITIES];

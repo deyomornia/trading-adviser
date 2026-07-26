@@ -13,6 +13,7 @@ import { scoreAsset, MIN_CANDLES } from "@/lib/signal-engine";
 import { STYLE_CONFIG, type TradingStyle } from "@/lib/tradingStyle";
 import * as binance from "./binance";
 import * as twelveData from "./twelve-data";
+import * as yahoo from "./yahoo";
 
 // Last ~40 closes, downsampled to ≤20 points, for the row sparkline.
 function sparkFrom(candles: Candle[]): number[] {
@@ -74,6 +75,13 @@ async function fetchLive(cat: CatalogAsset, style: TradingStyle) {
     return Promise.all([
       twelveData.fetchQuote(cat.pair),
       twelveData.fetchCandles(cat.pair, cfg.twelveInterval, cfg.limit),
+    ]);
+  }
+  if (cat.source === "yahoo" && cat.pair) {
+    // Yahoo maps the style to interval+range itself.
+    return Promise.all([
+      yahoo.fetchQuote(cat.pair),
+      yahoo.fetchCandles(cat.pair, style),
     ]);
   }
   return [null, null] as const;
