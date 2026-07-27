@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { login } from "@/app/auth/actions";
+import PasswordField from "@/components/PasswordField";
 
 export default async function LoginPage({
   searchParams,
@@ -40,21 +41,10 @@ export default async function LoginPage({
             className="mt-1 w-full rounded-md border border-slate-300 dark:border-ink-700 px-3 py-2 text-sm focus:border-slate-500 dark:focus:border-accent focus:outline-none"
           />
         </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-ink-100/90">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            className="mt-1 w-full rounded-md border border-slate-300 dark:border-ink-700 px-3 py-2 text-sm focus:border-slate-500 dark:focus:border-accent focus:outline-none"
-          />
-        </div>
+        <PasswordField name="password" label="Password" autoComplete="current-password" />
         <button
           formAction={login}
+          title="Sign in to your account"
           className="w-full rounded-md bg-slate-900 dark:bg-accent px-3 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
         >
           Sign in

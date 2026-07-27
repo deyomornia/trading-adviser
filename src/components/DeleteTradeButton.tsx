@@ -16,6 +16,7 @@ export default function DeleteTradeButton({ id }: { id: string }) {
       <input type="hidden" name="id" value={id} />
       <button
         type="submit"
+        title="Permanently delete this trade (asks for confirmation)"
         className="rounded-md px-2 py-1.5 text-sm text-slate-400 dark:text-ink-300/70 hover:text-red-600 dark:hover:text-red-400"
       >
         Delete

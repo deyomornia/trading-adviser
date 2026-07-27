@@ -74,6 +74,7 @@ export default function WatchlistManager({
                 <input type="hidden" name="symbol" value={a.symbol} />
                 <button
                   type="submit"
+                  title={isOn ? "Remove from your dashboard" : "Show this asset on your dashboard"}
                   className={
                     isOn
                       ? "rounded-md border border-slate-300 dark:border-ink-700 px-3 py-1.5 text-sm text-slate-600 dark:text-ink-300 hover:bg-slate-50 dark:hover:bg-ink-800"

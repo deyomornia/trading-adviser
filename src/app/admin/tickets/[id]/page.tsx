@@ -102,6 +102,7 @@ export default async function AdminTicketPage({
         <div className="mt-2 flex items-center gap-2">
           <button
             type="submit"
+            title="Reply to this user as DG Support"
             className="rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
           >
             Send reply
@@ -114,6 +115,7 @@ export default async function AdminTicketPage({
         <input type="hidden" name="status" value={open ? "closed" : "open"} />
         <button
           type="submit"
+          title={open ? "Mark this conversation resolved (user can no longer reply)" : "Reopen so the user can reply again"}
           className="rounded-md border border-slate-300 dark:border-ink-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-ink-300 hover:bg-slate-50 dark:hover:bg-ink-800"
         >
           {open ? "Close ticket" : "Reopen ticket"}

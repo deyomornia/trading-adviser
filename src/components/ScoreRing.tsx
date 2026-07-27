@@ -16,7 +16,7 @@ export default function ScoreRing({ score, size = 76 }: { score: number; size?: 
       : "text-red-600 dark:text-red-400";
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div title="Signal score out of 100 — how many signals line up right now" className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
         <circle
           cx={size / 2}

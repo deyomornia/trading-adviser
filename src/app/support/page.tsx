@@ -57,6 +57,7 @@ export default async function SupportPage({
         </div>
         <button
           type="submit"
+          title="Start a private conversation with the DG team"
           className="mt-4 rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
         >
           Send to the DG team

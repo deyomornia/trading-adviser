@@ -115,6 +115,7 @@ export default async function AdminPage({
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-ink-100">Admin — Users</h1>
         <Link
           href="/admin/tickets"
+          title="Read and reply to user feedback"
           className="rounded-md border border-slate-300 dark:border-ink-700 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-ink-300 hover:bg-slate-50 dark:hover:bg-ink-800"
         >
           Support tickets →
@@ -141,6 +142,7 @@ export default async function AdminPage({
         />
         <button
           type="submit"
+          title="Filter accounts by email"
           className="rounded-md border border-slate-300 dark:border-ink-700 px-3 py-2 text-sm font-medium text-slate-700 dark:text-ink-100/90 hover:bg-slate-50 dark:hover:bg-ink-800"
         >
           Search
@@ -214,6 +216,7 @@ export default async function AdminPage({
                           <input type="hidden" name="days" value={d} />
                           <button
                             type="submit"
+                            title={`Grant ${d} days of Pro (stacks on remaining access)`}
                             className="rounded-md border border-slate-300 dark:border-ink-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-ink-300 hover:bg-slate-50 dark:hover:bg-ink-800"
                           >
                             +{d}d
@@ -225,6 +228,7 @@ export default async function AdminPage({
                           <input type="hidden" name="userId" value={u.id} />
                           <button
                             type="submit"
+                            title="End this user's Pro access now (you can re-grant anytime)"
                             className="rounded-md px-2 py-1 text-xs font-medium text-slate-400 dark:text-ink-300/70 hover:text-amber-600 dark:hover:text-amber-400"
                           >
                             Revoke
@@ -237,6 +241,7 @@ export default async function AdminPage({
                             <input type="hidden" name="userId" value={u.id} />
                             <button
                               type="submit"
+                              title={isSuspended ? "Let this user sign in again" : "Block sign-in without deleting any data (reversible)"}
                               className="rounded-md px-2 py-1 text-xs font-medium text-slate-400 dark:text-ink-300/70 hover:text-slate-700 dark:text-ink-100/90 dark:hover:text-ink-100"
                             >
                               {isSuspended ? "Unsuspend" : "Suspend"}

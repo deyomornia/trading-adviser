@@ -103,6 +103,7 @@ function OpenTradeRow({ trade }: { trade: Trade }) {
             </div>
             <button
               type="submit"
+              title="Close this trade at the exit price and record the result"
               className="rounded-md bg-slate-900 dark:bg-accent px-3 py-1.5 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
             >
               Close

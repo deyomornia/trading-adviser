@@ -23,6 +23,7 @@ export default function DeleteUserButton({ userId, email }: { userId: string; em
       <input type="hidden" name="userId" value={userId} />
       <button
         type="submit"
+        title="Permanently delete this user and ALL their data (type-to-confirm)"
         className="rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 dark:text-ink-300/70 hover:text-red-600 dark:hover:text-red-400"
       >
         Delete

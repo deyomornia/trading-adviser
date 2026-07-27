@@ -56,7 +56,7 @@ export default async function UpgradePage({
 
         {configured ? (
           <form action={startCheckout} className="mt-4">
-            <button className="w-full rounded-md bg-slate-900 dark:bg-accent px-4 py-2.5 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90">
+            <button title="Pay with GCash, GrabPay, Maya, or card via secure checkout" className="w-full rounded-md bg-slate-900 dark:bg-accent px-4 py-2.5 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90">
               {tier === "paid" ? `Add ${ACCESS_DAYS} more days — ₱499` : "Get Pro — ₱499"}
             </button>
           </form>

@@ -57,6 +57,7 @@ export default async function SettingsPage() {
           <div className="sm:col-span-3">
             <button
               type="submit"
+              title="Save these defaults for the Trade Plan calculator"
               className="rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
             >
               Save preferences
@@ -98,6 +99,7 @@ export default async function SettingsPage() {
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <Link
             href="/upgrade"
+            title="View plans or add more Pro days"
             className="rounded-md border border-slate-300 dark:border-ink-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-ink-100/90 hover:bg-slate-50 dark:hover:bg-ink-800"
           >
             {isPro ? "Add more days" : "Get Pro"}
@@ -105,6 +107,7 @@ export default async function SettingsPage() {
           <form action={signOut}>
             <button
               type="submit"
+              title="Sign out of your account"
               className="rounded-md px-4 py-2 text-sm font-medium text-slate-500 dark:text-ink-300 hover:text-red-600 dark:hover:text-red-400"
             >
               Sign out

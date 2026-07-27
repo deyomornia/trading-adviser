@@ -10,14 +10,14 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 // The pages of the app. Add or rename here and the whole menu updates.
 const links = [
-  { href: "/", label: "Dashboard" },
-  { href: "/watchlist", label: "Watchlist" },
-  { href: "/assets", label: "Asset Detail" },
-  { href: "/trade-plan", label: "Trade Plan" },
-  { href: "/journal", label: "Journal" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/support", label: "Support" },
-  { href: "/settings", label: "Settings" },
+  { href: "/", label: "Dashboard", title: "Your watchlist with live signal scores and top opportunities" },
+  { href: "/watchlist", label: "Watchlist", title: "Choose which coins and commodities appear on your dashboard" },
+  { href: "/assets", label: "Asset Detail", title: "Charts, indicators, and plain-English explanations per asset" },
+  { href: "/trade-plan", label: "Trade Plan", title: "Position-size a trade from your risk before you enter" },
+  { href: "/journal", label: "Journal", title: "Log your trades and learn from your own history (Pro)" },
+  { href: "/portfolio", label: "Portfolio", title: "Your exposure, total risk, and concentration warnings (Pro)" },
+  { href: "/support", label: "Support", title: "Send feedback or questions straight to the DG team" },
+  { href: "/settings", label: "Settings", title: "Defaults, account, and plan" },
 ];
 
 // True only once Deo has added the Supabase keys to .env.local.
@@ -27,10 +27,14 @@ const supabaseConfigured = Boolean(
 );
 
 function AuthArea() {
+  const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
   const [admin, setAdmin] = useState(false);
   const [ready, setReady] = useState(false);
 
+  // Re-check on every route change: server-action logins/logouts set cookies
+  // without firing a client-side auth event, so the post-login redirect is our
+  // signal to look again (fixes "still shows Sign in after logging in").
   useEffect(() => {
     if (!supabaseConfigured) {
       setReady(true);
@@ -64,7 +68,7 @@ function AuthArea() {
     });
 
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [pathname]);
 
   // Before Supabase is wired up, or while loading, show nothing on the right.
   if (!supabaseConfigured || !ready) return null;
@@ -75,6 +79,7 @@ function AuthArea() {
         {admin && (
           <Link
             href="/admin"
+            title="Manage users and support tickets (owner only)"
             className="rounded-md bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-accent/10 dark:text-accent dark:hover:bg-accent/20"
           >
             Admin
@@ -85,6 +90,7 @@ function AuthArea() {
         <form action={signOut}>
           <button
             type="submit"
+            title="Sign out of your account"
             className="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-ink-100"
           >
             Sign out
@@ -99,6 +105,7 @@ function AuthArea() {
       <ThemeToggle />
       <Link
         href="/login"
+        title="Sign in or create an account"
         className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 dark:bg-accent dark:text-ink-950 dark:hover:bg-accent/90"
       >
         Sign in
@@ -118,7 +125,7 @@ export default function Nav() {
           <span className="font-semibold tracking-tight text-slate-900 dark:text-ink-100">
             DG Trading Adviser
           </span>
-          <span className="rounded border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+          <span title="Beta version — features may still change" className="rounded border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
             Beta
           </span>
         </Link>
@@ -131,6 +138,7 @@ export default function Nav() {
             <Link
               key={link.href}
               href={link.href}
+              title={link.title}
               className={
                 "rounded-md px-3 py-1.5 text-sm transition-colors " +
                 (active

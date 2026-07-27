@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signup } from "@/app/auth/actions";
+import PasswordField from "@/components/PasswordField";
 
 export default async function SignupPage({
   searchParams,
@@ -35,23 +36,23 @@ export default async function SignupPage({
             className="mt-1 w-full rounded-md border border-slate-300 dark:border-ink-700 px-3 py-2 text-sm focus:border-slate-500 dark:focus:border-accent focus:outline-none"
           />
         </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-ink-100/90">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minLength={6}
-            autoComplete="new-password"
-            className="mt-1 w-full rounded-md border border-slate-300 dark:border-ink-700 px-3 py-2 text-sm focus:border-slate-500 dark:focus:border-accent focus:outline-none"
-          />
-          <p className="mt-1 text-xs text-slate-400 dark:text-ink-300/70">At least 6 characters.</p>
-        </div>
+        <PasswordField
+          name="password"
+          label="Password"
+          autoComplete="new-password"
+          minLength={6}
+          hint="At least 6 characters."
+        />
+        <PasswordField
+          name="confirm"
+          label="Confirm password"
+          autoComplete="new-password"
+          minLength={6}
+          hint="Type the same password again so a typo can't lock you out."
+        />
         <button
           formAction={signup}
+          title="Create your DG Trading Adviser account"
           className="w-full rounded-md bg-slate-900 dark:bg-accent px-3 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
         >
           Create account

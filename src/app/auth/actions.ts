@@ -27,14 +27,22 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
+  // Prefer the configured public URL so confirmation emails always point at
+  // the live site (never localhost), regardless of request headers.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin;
 
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (password !== confirm) {
+    redirect("/signup?error=" + encodeURIComponent("Passwords don't match — please type the same password in both fields."));
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${origin}/auth/callback` },
+    options: { emailRedirectTo: `${siteUrl}/auth/callback` },
   });
 
   if (error) {

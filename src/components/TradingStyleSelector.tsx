@@ -15,6 +15,7 @@ export default function TradingStyleSelector({ current }: { current: TradingStyl
               <input type="hidden" name="style" value={s} />
               <button
                 type="submit"
+                title={STYLE_CONFIG[s].blurb}
                 className={
                   "rounded px-3 py-1.5 text-sm font-medium transition-colors " +
                   (active

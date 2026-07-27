@@ -96,6 +96,7 @@ export default function SignalInfo({
         onClick={toggle}
         className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${badgeColor(signal)} cursor-pointer hover:opacity-80`}
         aria-label="Why this signal?"
+        title="Click to see why this signal and the numbers behind it"
       >
         {signal}
         <span className="text-[10px] opacity-70">ⓘ</span>

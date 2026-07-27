@@ -81,14 +81,14 @@ export default async function TopOpportunities({
                 <tr key={a.symbol} className="border-b border-slate-100 dark:border-ink-700/60 last:border-0">
                   <td className="px-4 py-3 font-mono tabular-nums text-slate-400 dark:text-ink-300/70">{i + 1}</td>
                   <td className="px-4 py-3">
-                    <Link href={`/assets/${a.symbol}`} className="group">
+                    <Link href={`/assets/${a.symbol}`} title={`Open ${a.name} — chart, score breakdown, and AI take`} className="group">
                       <span className="font-medium text-slate-900 dark:text-ink-100 group-hover:underline">
                         {a.name}
                       </span>{" "}
                       <span className="text-slate-400 dark:text-ink-300/70">{a.symbol}</span>
                     </Link>
                   </td>
-                  <td className="hidden px-4 py-3 sm:table-cell">
+                  <td className="hidden px-4 py-3 sm:table-cell" title="Recent price trend">
                     {a.spark ? <Sparkline points={a.spark} /> : null}
                   </td>
                   <td className="px-4 py-3">
@@ -119,12 +119,13 @@ export default async function TopOpportunities({
                   {user && (
                     <td className="px-4 py-3 text-right">
                       {watching.has(a.symbol) ? (
-                        <span className="text-xs text-slate-400 dark:text-ink-300/70">✓ Watching</span>
+                        <span title="Already on your watchlist" className="text-xs text-slate-400 dark:text-ink-300/70">✓ Watching</span>
                       ) : (
                         <form action={addToWatchlist}>
                           <input type="hidden" name="symbol" value={a.symbol} />
                           <button
                             type="submit"
+                            title="Add this asset to your dashboard watchlist"
                             className="rounded-md border border-slate-300 dark:border-ink-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-ink-300 hover:bg-slate-50 dark:hover:bg-ink-800"
                           >
                             + Watch

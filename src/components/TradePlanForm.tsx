@@ -70,6 +70,7 @@ export default function TradePlanForm({
               <button
                 key={d}
                 type="button"
+                title={d === "long" ? "Long — you profit if the price goes up" : "Short — you profit if the price goes down"}
                 onClick={() => setDirection(d)}
                 className={
                   "rounded px-4 py-1.5 text-sm capitalize transition-colors " +
@@ -171,6 +172,7 @@ export default function TradePlanForm({
           <input type="hidden" name="notes" value={notes} />
           <button
             type="submit"
+            title="Save this plan as an open trade in your journal (Pro)"
             disabled={!canSave}
             className="w-full rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
           >

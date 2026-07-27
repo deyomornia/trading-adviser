@@ -17,6 +17,7 @@ export default function UpgradePrompt({ feature }: { feature: string }) {
       </p>
       <Link
         href="/upgrade"
+        title="See what Pro includes and start a 7-day free trial"
         className="mt-5 inline-block rounded-md bg-slate-900 dark:bg-accent px-5 py-2.5 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
       >
         See Pro — {TRIAL_DAYS}-day free trial

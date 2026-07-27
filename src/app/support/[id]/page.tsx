@@ -91,6 +91,7 @@ export default async function TicketPage({
           />
           <button
             type="submit"
+            title="Send your reply to the DG team"
             className="mt-2 rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
           >
             Send reply

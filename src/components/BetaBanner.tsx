@@ -30,6 +30,7 @@ export default function BetaBanner() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss beta notice"
+          title="Dismiss this notice"
           className="shrink-0 rounded px-1.5 text-amber-800/70 hover:text-amber-900 dark:text-amber-300/70 dark:hover:text-amber-200"
         >
           ✕

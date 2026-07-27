@@ -60,14 +60,14 @@ export default function AssetTable({
                   className="border-b border-slate-100 dark:border-ink-700/60 last:border-0"
                 >
                   <td className="px-4 py-3">
-                    <Link href={`/assets/${a.symbol}`} className="group">
+                    <Link href={`/assets/${a.symbol}`} title={`Open ${a.name} — chart, score breakdown, and AI take`} className="group">
                       <span className="font-medium text-slate-900 dark:text-ink-100 group-hover:underline">
                         {a.name}
                       </span>{" "}
                       <span className="text-slate-400 dark:text-ink-300/70">{a.symbol}</span>
                     </Link>
                   </td>
-                  <td className="hidden px-4 py-3 sm:table-cell">
+                  <td className="hidden px-4 py-3 sm:table-cell" title="Recent price trend">
                     {a.spark ? (
                       <Sparkline points={a.spark} />
                     ) : (
@@ -105,11 +105,11 @@ export default function AssetTable({
                   </td>
                   <td className="px-4 py-3 text-right">
                     {a.isSample ? (
-                      <span className="rounded bg-amber-100 dark:bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
+                      <span title="Placeholder data — not live market prices" className="rounded bg-amber-100 dark:bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
                         SAMPLE
                       </span>
                     ) : (
-                      <span className="rounded bg-emerald-100 dark:bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                      <span title="Real market data, refreshed periodically" className="rounded bg-emerald-100 dark:bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
                         LIVE
                       </span>
                     )}
