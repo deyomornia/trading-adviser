@@ -47,6 +47,9 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 - [x] Commodities now LIVE via Yahoo Finance futures (unofficial feed, per-asset SAMPLE
       fallback): Oil CL=F, Copper HG=F + new Silver SI=F and Natural Gas NG=F. Gold stays on
       Twelve Data. All three trading styles supported.
+- [x] Beta notice (nav pill + dismissible banner → /support) and support ticketing:
+      per-user tickets + threaded conversations with "DG Support" (tickets.sql, strict RLS),
+      admin inbox at /admin/tickets with reply/close/reopen + open-tickets stat.
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
