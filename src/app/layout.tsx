@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { cookies } from "next/headers";
 import Nav from "@/components/Nav";
+import BetaBanner from "@/components/BetaBanner";
 import { getTheme } from "@/lib/theme";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -18,6 +20,7 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   // Server-rendered theme (cookie, default dark) — no flash on load.
   const theme = await getTheme();
+  const showBeta = (await cookies()).get("beta_banner")?.value !== "off";
 
   return (
     <html
@@ -27,6 +30,7 @@ export default async function RootLayout({
     >
       <body className="flex min-h-full flex-col font-sans">
         <Nav />
+        {showBeta && <BetaBanner />}
 
         {/* Each page's content appears here */}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">

@@ -16,6 +16,7 @@ const links = [
   { href: "/trade-plan", label: "Trade Plan" },
   { href: "/journal", label: "Journal" },
   { href: "/portfolio", label: "Portfolio" },
+  { href: "/support", label: "Support" },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -116,6 +117,9 @@ export default function Nav() {
           <Logo />
           <span className="font-semibold tracking-tight text-slate-900 dark:text-ink-100">
             DG Trading Adviser
+          </span>
+          <span className="rounded border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+            Beta
           </span>
         </Link>
         {links.map((link) => {

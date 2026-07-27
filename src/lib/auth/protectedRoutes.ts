@@ -10,6 +10,7 @@ export const PROTECTED_PREFIXES = [
   "/settings",
   "/watchlist",
   "/admin",
+  "/support",
 ];
 
 // The dashboard ("/") is intentionally PUBLIC for now so visitors can see a

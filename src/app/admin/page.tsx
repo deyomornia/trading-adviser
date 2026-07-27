@@ -104,16 +104,30 @@ export default async function AdminPage({
   const query = (q ?? "").trim().toLowerCase();
   const shown = query ? users.filter((u) => u.email.toLowerCase().includes(query)) : users;
 
+  const { count: openTickets } = await createAdminClient()
+    .from("tickets")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "open");
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-ink-100">Admin — Users</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-ink-100">Admin — Users</h1>
+        <Link
+          href="/admin/tickets"
+          className="rounded-md border border-slate-300 dark:border-ink-700 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-ink-300 hover:bg-slate-50 dark:hover:bg-ink-800"
+        >
+          Support tickets →
+        </Link>
+      </div>
 
       {/* Stats */}
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
         <StatCard label="Total users" value={users.length} />
         <StatCard label="Active Pro" value={proCount} />
         <StatCard label="New this week" value={`+${newWeek}`} />
         <StatCard label="New this month" value={`+${newMonth}`} />
+        <StatCard label="Open tickets" value={openTickets ?? 0} />
       </div>
 
       {/* Search */}
