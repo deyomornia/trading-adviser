@@ -50,6 +50,9 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 - [x] Beta notice (nav pill + dismissible banner → /support) and support ticketing:
       per-user tickets + threaded conversations with "DG Support" (tickets.sql, strict RLS),
       admin inbox at /admin/tickets with reply/close/reopen + open-tickets stat.
+- [x] Beta feedback round 1 — signup confirm-password + show/hide toggles; confirmation-email
+      redirect hardened to NEXT_PUBLIC_SITE_URL (plus Supabase Site URL config); hover tooltips
+      on all interactive controls; nav now refreshes login state right after sign-in.
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
