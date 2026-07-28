@@ -139,7 +139,14 @@ export default function SignalInfo({
               <p className="mt-3 border-t border-slate-100 dark:border-ink-700/60 pt-2 text-[11px] leading-relaxed text-slate-400 dark:text-ink-300/70">
                 A “Buy Candidate” needs a strong score, a clear uptrend for the chosen
                 timeframe, and a valid stop-loss — otherwise it’s downgraded to “Wait”.
-                Decision-support only, not financial advice.
+                Decision-support only, not financial advice.{" "}
+                <a
+                  href="/methodology"
+                  title="The full rules behind scores and verdicts"
+                  className="underline"
+                >
+                  How signals work →
+                </a>
               </p>
             </div>
           </>,

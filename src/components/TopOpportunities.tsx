@@ -57,7 +57,10 @@ export default async function TopOpportunities({
         The highest signal scores across every asset we track right now, using{" "}
         {STYLE_CONFIG[style].bars.toLowerCase()}. A high score means more signals
         line up at the moment — it is not a prediction or a guarantee. Only assets
-        with live data are ranked; rankings refresh every ~5 minutes.
+        with live data are ranked; rankings refresh every ~5 minutes.{" "}
+        <Link href="/methodology" title="The full rules behind scores and verdicts" className="underline">
+          How signals work →
+        </Link>
       </p>
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950">

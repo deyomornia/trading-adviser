@@ -43,7 +43,10 @@ export default async function RootLayout({
             This app provides trading and investment decision-support tools. It
             does not guarantee profits and does not replace professional
             financial advice. Markets involve risk, and users are responsible
-            for their own decisions.
+            for their own decisions.{" "}
+            <a href="/methodology" title="The full rules behind scores and verdicts" className="underline">
+              How signals work
+            </a>
           </p>
         </footer>
       </body>
