@@ -128,8 +128,9 @@ export default async function AssetDetailPage({
         </div>
       ) : (
         <div className="mt-6 rounded-md border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
-          <strong>LIVE data.</strong> Real market prices and history. This is
-          decision-support only — not financial advice.
+          <strong>LIVE data.</strong> Real market prices and history, updated
+          every ~5 minutes (commodities up to ~15). This is decision-support
+          only — not financial advice.
         </div>
       )}
 

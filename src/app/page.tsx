@@ -50,8 +50,9 @@ export default async function DashboardPage() {
       {anyLive && anySample ? (
         <div className="mt-6 rounded-md border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
           <strong>Mixed data.</strong> Items marked <span className="font-semibold text-emerald-700 dark:text-emerald-300">LIVE</span>{" "}
-          are real market prices; items marked <span className="font-semibold">SAMPLE</span> are still
-          placeholders until their live feed is connected.
+          are real market prices, updated every ~5 minutes (commodities up to
+          ~15); items marked <span className="font-semibold">SAMPLE</span> are
+          still placeholders until their live feed is connected.
         </div>
       ) : anySample ? (
         <div className="mt-6 rounded-md border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
@@ -60,8 +61,9 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="mt-6 rounded-md border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
-          <strong>Showing LIVE market data.</strong> Prices refresh periodically.
-          This is decision-support only — not financial advice.
+          <strong>Showing LIVE market data.</strong> Prices update every ~5
+          minutes (commodities up to ~15) — not a tick-by-tick feed. This is
+          decision-support only — not financial advice.
         </div>
       )}
 

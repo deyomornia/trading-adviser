@@ -109,7 +109,7 @@ export default function AssetTable({
                         SAMPLE
                       </span>
                     ) : (
-                      <span title="Real market data, refreshed periodically" className="rounded bg-emerald-100 dark:bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                      <span title="Real market data — updates every ~5 min (commodities up to ~15 min)" className="rounded bg-emerald-100 dark:bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
                         LIVE
                       </span>
                     )}
