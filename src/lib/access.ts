@@ -11,7 +11,8 @@ export type Feature =
   | "journal"
   | "portfolio"
   | "screener-full"
-  | "trade-setup";
+  | "trade-setup"
+  | "profiles-all";
 
 // Phase B split (chosen 2026-07-13):
 //   FREE: Dashboard + Asset Detail + Trade Plan (view/plan any asset)
@@ -19,7 +20,9 @@ export type Feature =
 // "screener-full" (2026-07-26): free tier sees the top 3 opportunities;
 // Pro unlocks the full ranked list.
 // "trade-setup" (2026-07-28): the rule-based suggested setup card is Pro.
-const PAID_ONLY: Feature[] = ["journal", "portfolio", "screener-full", "trade-setup"];
+// "profiles-all" (2026-07-28): free = Classic + ONE extra scoring combination
+// of the user's choice per trading style; Pro unlocks every combination.
+const PAID_ONLY: Feature[] = ["journal", "portfolio", "screener-full", "trade-setup", "profiles-all"];
 
 export function canAccess(tier: Tier, feature: Feature): boolean {
   if (!PAID_ONLY.includes(feature)) return true; // free feature
@@ -35,4 +38,5 @@ export const FEATURE_LABEL: Record<Feature, string> = {
   portfolio: "Portfolio",
   "screener-full": "Top Opportunities (full list)",
   "trade-setup": "Suggested trade setup",
+  "profiles-all": "All indicator combinations",
 };

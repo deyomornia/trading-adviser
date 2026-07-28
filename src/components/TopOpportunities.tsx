@@ -12,6 +12,7 @@ import { canAccess } from "@/lib/access";
 import { createClient } from "@/lib/supabase/server";
 import { addToWatchlist } from "@/app/watchlist/actions";
 import { STYLE_CONFIG, type TradingStyle } from "@/lib/tradingStyle";
+import type { ScoringProfile } from "@/lib/signal-engine";
 import SignalInfo from "@/components/SignalInfo";
 import Sparkline from "@/components/Sparkline";
 
@@ -37,13 +38,15 @@ const SKIP_LABEL: Record<string, string> = {
 
 export default async function TopOpportunities({
   style,
+  profile,
   watchlist,
 }: {
   style: TradingStyle;
+  profile: ScoringProfile;
   watchlist: string[];
 }) {
   const [{ assets, skipped }, tier, supabase] = await Promise.all([
-    getTopOpportunities(style),
+    getTopOpportunities(style, profile),
     getUserTier(),
     createClient(),
   ]);
@@ -61,13 +64,13 @@ export default async function TopOpportunities({
   return (
     <section className="mt-10">
       <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
-        Top opportunities — {STYLE_CONFIG[style].label} style
+        Top opportunities — {STYLE_CONFIG[style].label} style · {profile.name}
       </h2>
       <p className="mb-3 max-w-2xl text-xs text-slate-400 dark:text-ink-300/70">
-        The highest signal scores across every asset we track right now, using{" "}
-        {STYLE_CONFIG[style].bars.toLowerCase()}. A high score means more signals
-        line up at the moment — it is not a prediction or a guarantee. Only assets
-        with live data are ranked; rankings refresh every ~5 minutes.{" "}
+        The highest {profile.name} scores across every asset we track right now,
+        using {STYLE_CONFIG[style].bars.toLowerCase()}. A high score means more
+        signals line up at the moment — it is not a prediction or a guarantee.
+        Only assets with live data are ranked; rankings refresh every ~5 minutes.{" "}
         <Link href="/methodology" title="The full rules behind scores and verdicts" className="underline">
           How signals work →
         </Link>

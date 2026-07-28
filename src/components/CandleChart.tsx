@@ -8,11 +8,13 @@ import { useEffect, useRef, useState } from "react";
 import {
   createChart,
   CandlestickSeries,
+  LineSeries,
   ColorType,
   type UTCTimestamp,
   type IChartApi,
 } from "lightweight-charts";
 import type { Candle } from "@/data/sampleCandles";
+import type { OverlaySeries } from "@/lib/signal-engine";
 
 function isDark() {
   return typeof document !== "undefined" && document.documentElement.classList.contains("dark");
@@ -21,9 +23,12 @@ function isDark() {
 export default function CandleChart({
   candles,
   intraday = false,
+  overlays = [],
 }: {
   candles: Candle[];
   intraday?: boolean;
+  // Indicator lines from the active scoring profile (computed server-side).
+  overlays?: OverlaySeries[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dark, setDark] = useState(false);
@@ -87,6 +92,22 @@ export default function CandleChart({
       }))
     );
 
+    // The active profile's indicator lines (EMAs, VWAP, Bollinger, SMAs…).
+    for (const o of overlays) {
+      const line = chart.addSeries(LineSeries, {
+        color: o.color,
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+        crosshairMarkerVisible: false,
+      });
+      line.setData(
+        o.points
+          .filter((p) => Number.isFinite(p.value))
+          .map((p) => ({ time: p.time as UTCTimestamp, value: p.value }))
+      );
+    }
+
     chart.timeScale().fitContent();
 
     // Keep the chart width in sync with its container on resize.
@@ -97,7 +118,24 @@ export default function CandleChart({
       window.removeEventListener("resize", handleResize);
       chart.remove();
     };
-  }, [candles, intraday, dark]);
+  }, [candles, intraday, dark, overlays]);
 
-  return <div ref={containerRef} className="w-full" />;
+  return (
+    <div>
+      {overlays.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-ink-300">
+          {overlays.map((o) => (
+            <span key={o.label} className="inline-flex items-center gap-1.5">
+              <span
+                className="inline-block h-0.5 w-4 rounded-full"
+                style={{ backgroundColor: o.color }}
+              />
+              {o.label}
+            </span>
+          ))}
+        </div>
+      )}
+      <div ref={containerRef} className="w-full" />
+    </div>
+  );
 }

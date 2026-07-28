@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { dataProvider } from "@/lib/data-providers";
-import { scoreWithProfile, classicProfile } from "@/lib/signal-engine";
+import { scoreWithProfile, buildContext, type OverlaySeries } from "@/lib/signal-engine";
 import { getTradingStyle, STYLE_CONFIG } from "@/lib/tradingStyle";
+import { getScoringSelection } from "@/lib/scoringProfile";
+import { setScoringProfile } from "@/app/actions/scoringProfile";
 import { buildTradeSetup } from "@/lib/trade-setup";
 import { getTradePrefs } from "@/lib/prefs";
 import { getUserTier } from "@/lib/tier";
@@ -12,6 +14,7 @@ import type { SignalVerdict } from "@/types";
 import CandleChart from "@/components/CandleChart";
 import AiSummary from "@/components/AiSummary";
 import TradingStyleSelector from "@/components/TradingStyleSelector";
+import ProfilePicker from "@/components/ProfilePicker";
 import ScoreRing from "@/components/ScoreRing";
 import TradeSetupCard from "@/components/TradeSetupCard";
 
@@ -67,7 +70,7 @@ export default async function AssetDetailPage({
 
   const style = await getTradingStyle();
   const styleCfg = STYLE_CONFIG[style];
-  const profile = classicProfile;
+  const { profile, extraSlot, isPro } = await getScoringSelection(style);
   const [assets, candles] = await Promise.all([
     dataProvider.getAssets([sym], style, profile),
     dataProvider.getCandles(sym, style, profile),
@@ -76,12 +79,28 @@ export default async function AssetDetailPage({
 
   if (!asset || !candles) notFound();
 
-  const outcome = scoreWithProfile(candles, style, profile, {
-    assetName: asset.name,
-  });
+  // Non-Classic combinations never score SAMPLE data (same rule as the tables).
+  const outcome =
+    asset.isSample && profile.id !== "classic"
+      ? ({
+          status: "unavailable",
+          code: "sample-only",
+          reason: `${profile.name} needs live market data — only SAMPLE data is available for ${asset.name} right now.`,
+        } as const)
+      : scoreWithProfile(candles, style, profile, { assetName: asset.name });
   const result = outcome.status === "scored" ? outcome.result : null;
   const reasons = result?.explanation ?? [];
   const up = asset.dailyChangePct >= 0;
+
+  // Indicator lines for the chart, from the active combination.
+  let overlays: OverlaySeries[] = [];
+  if (result) {
+    try {
+      overlays = profile.overlays(buildContext(candles, style));
+    } catch {
+      overlays = []; // a chart without overlays beats a broken page
+    }
+  }
 
   // Suggested setup (Pro): rule-based levels from the user's own defaults.
   const [tier, prefs] = await Promise.all([getUserTier(), getTradePrefs()]);
@@ -136,6 +155,14 @@ export default async function AssetDetailPage({
         <TradingStyleSelector current={style} />
       </div>
 
+      {/* Indicator combination — the recipe behind this page's score */}
+      <div className="mt-4">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-ink-300">
+          Indicator combination
+        </span>
+        <ProfilePicker style={style} current={profile} extraSlot={extraSlot} isPro={isPro} />
+      </div>
+
       {/* Data-source reminder */}
       {asset.isSample ? (
         <div className="mt-6 rounded-md border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
@@ -155,6 +182,17 @@ export default async function AssetDetailPage({
         <div className="mt-6 rounded-md border border-slate-200 dark:border-ink-700 bg-slate-50 dark:bg-ink-800/50 px-4 py-3 text-sm text-slate-700 dark:text-ink-100/90">
           <strong>No score for this combination.</strong>{" "}
           {outcome.status === "unavailable" ? outcome.reason : ""}
+          <form action={setScoringProfile} className="mt-2">
+            <input type="hidden" name="style" value={style} />
+            <input type="hidden" name="profileId" value="classic" />
+            <button
+              type="submit"
+              title="Score this asset with the Classic combination instead"
+              className="rounded-md border border-slate-300 dark:border-ink-700 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-ink-100/90 hover:bg-slate-100 dark:hover:bg-ink-800"
+            >
+              Switch to Classic for this style
+            </button>
+          </form>
         </div>
       )}
 
@@ -165,7 +203,12 @@ export default async function AssetDetailPage({
             <p className="mt-6 text-sm text-slate-400 dark:text-ink-300/70">Generating AI take…</p>
           }
         >
-          <AiSummary asset={asset} result={result} styleLabel={styleCfg.label} />
+          <AiSummary
+            asset={asset}
+            result={result}
+            styleLabel={styleCfg.label}
+            logicNote={profile.logicNote}
+          />
         </Suspense>
       )}
 
@@ -174,16 +217,22 @@ export default async function AssetDetailPage({
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
           Price — last {candles.length} {styleCfg.unit}
         </h2>
-        <CandleChart candles={candles} intraday={styleCfg.intraday} />
+        <CandleChart candles={candles} intraday={styleCfg.intraday} overlays={overlays} />
       </section>
 
       {result && (
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {/* Score breakdown — components come from the active scoring profile */}
           <section className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
+            <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
               How the score is built
             </h2>
+            <p className="mb-4 text-xs text-slate-400 dark:text-ink-300/70">
+              Scored with: {result.profileName}{" "}
+              <Link href="/methodology" title="The full rules behind every combination" className="underline">
+                full rules →
+              </Link>
+            </p>
             <div className="space-y-3">
               {result.components.map((c) => (
                 <ScoreBar key={c.key} label={c.name} value={c.points} max={c.maxPoints} />

@@ -3,17 +3,21 @@ import { Suspense } from "react";
 import { dataProvider } from "@/lib/data-providers";
 import { getWatchlistSymbols } from "@/lib/watchlist";
 import { getTradingStyle } from "@/lib/tradingStyle";
+import { getScoringSelection } from "@/lib/scoringProfile";
 import { DEFAULT_WATCHLIST } from "@/data/assetCatalog";
 import AssetTable from "@/components/AssetTable";
 import TradingStyleSelector from "@/components/TradingStyleSelector";
+import ProfilePicker from "@/components/ProfilePicker";
 import TopOpportunities from "@/components/TopOpportunities";
 
 export default async function DashboardPage() {
   // Show the user's chosen watchlist (or a starter set if they have none / are
-  // logged out), scored on the timeframe for their trading style.
+  // logged out), scored on the timeframe for their trading style with their
+  // chosen indicator combination.
   const [chosen, style] = await Promise.all([getWatchlistSymbols(), getTradingStyle()]);
+  const { profile, extraSlot, isPro } = await getScoringSelection(style);
   const symbols = chosen.length ? chosen : DEFAULT_WATCHLIST;
-  const assets = await dataProvider.getAssets(symbols, style);
+  const assets = await dataProvider.getAssets(symbols, style, profile);
   const crypto = assets.filter((a) => a.type === "crypto");
   const commodities = assets.filter((a) => a.type === "commodity");
 
@@ -44,6 +48,14 @@ export default async function DashboardPage() {
           Trading style
         </span>
         <TradingStyleSelector current={style} />
+      </div>
+
+      {/* Indicator combination — changes the recipe the scores are built from */}
+      <div className="mt-4">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-ink-300">
+          Indicator combination
+        </span>
+        <ProfilePicker style={style} current={profile} extraSlot={extraSlot} isPro={isPro} />
       </div>
 
       {/* Honest data-source banner: reflects the live/sample mix. */}
@@ -88,7 +100,7 @@ export default async function DashboardPage() {
           <p className="mt-10 text-sm text-slate-400 dark:text-ink-300/70">Scanning the market for top opportunities…</p>
         }
       >
-        <TopOpportunities style={style} watchlist={chosen} />
+        <TopOpportunities style={style} profile={profile} watchlist={chosen} />
       </Suspense>
     </div>
   );

@@ -77,6 +77,13 @@ export default function AssetTable({
                   <td className="px-4 py-3">
                     {a.signal ? (
                       <SignalInfo signal={a.signal} score={a.score} detail={a.detail} />
+                    ) : a.unavailableReason ? (
+                      <span
+                        title={a.unavailableReason}
+                        className="cursor-help rounded bg-slate-100 dark:bg-ink-800 px-2 py-0.5 text-xs text-slate-500 dark:text-ink-300"
+                      >
+                        n/a ⓘ
+                      </span>
                     ) : (
                       <span className="text-slate-300 dark:text-ink-700">—</span>
                     )}
