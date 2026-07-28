@@ -53,6 +53,11 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 - [x] Beta feedback round 1 — signup confirm-password + show/hide toggles; confirmation-email
       redirect hardened to NEXT_PUBLIC_SITE_URL (plus Supabase Site URL config); hover tooltips
       on all interactive controls; nav now refreshes login state right after sign-in.
+- [x] Data-freshness notes in UI (~5 min prices, ~15 min commodities) on banners/tooltips/screener.
+- [x] Suggested Trade Setup on Asset Detail (Pro) — rule-based entry, SL1 (1×ATR), SL2 (swing
+      low/2×ATR), TP1–3 at 1R/2R/3R, sized from the user's Settings defaults; only renders
+      actionable on Buy Candidate (hard rule visible); "Open in Trade Plan" prefills all levels.
+      Long-only; clearly labeled not-a-recommendation/not-backtested.
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
