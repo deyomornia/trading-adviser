@@ -14,20 +14,39 @@ import { classicProfile, type ScoringProfile } from "@/lib/signal-engine";
 
 export const SCREENER_LIMIT = 15;
 
+export interface ScreenerResult {
+  assets: Asset[];
+  // Asset+profile pairs the guard refused to score, tallied by category
+  // (e.g. { "no-volume": 5, "short-history": 2 }) — shown honestly in the UI.
+  skipped: { count: number; reasons: Record<string, number> };
+}
+
 async function scan(
   style: TradingStyle,
   profile: ScoringProfile,
   limit: number
-): Promise<Asset[]> {
+): Promise<ScreenerResult> {
   // Every catalog asset that has a live feed at all (excludes sample-only).
   const symbols = assetCatalog.filter((a) => a.source !== "sample").map((a) => a.symbol);
 
   const assets = await liveProvider.getAssets(symbols, style, profile);
 
-  return assets
+  const reasons: Record<string, number> = {};
+  let count = 0;
+  for (const a of assets) {
+    if (a.unavailableReason) {
+      count += 1;
+      const code = a.unavailableCode ?? "other";
+      reasons[code] = (reasons[code] ?? 0) + 1;
+    }
+  }
+
+  const ranked = assets
     .filter((a) => !a.isSample && a.score !== undefined)
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
     .slice(0, limit);
+
+  return { assets: ranked, skipped: { count, reasons } };
 }
 
 // Cached per style + profile for 5 minutes so the ~45-asset fan-out runs at
@@ -36,7 +55,7 @@ export async function getTopOpportunities(
   style: TradingStyle,
   profile: ScoringProfile = classicProfile,
   limit = SCREENER_LIMIT
-): Promise<Asset[]> {
+): Promise<ScreenerResult> {
   const cached = unstable_cache(
     () => scan(style, profile, limit),
     ["top-opportunities", style, profile.id, String(limit)],

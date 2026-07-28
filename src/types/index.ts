@@ -34,6 +34,7 @@ export interface Asset {
   spark?: number[];        // recent closes (downsampled) for the sparkline
   profileId?: string;      // scoring profile used (when scored)
   unavailableReason?: string; // set when the chosen profile can't score this asset
+  unavailableCode?: string;   // machine-readable category for the reason above
 }
 
 // Trade Journal (Phase 7). One record per trade the user logs.

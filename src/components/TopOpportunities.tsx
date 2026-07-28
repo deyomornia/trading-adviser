@@ -25,6 +25,16 @@ function formatPrice(price: number, currency: string) {
   }).format(price);
 }
 
+// Friendly labels for the availability guard's skip categories.
+const SKIP_LABEL: Record<string, string> = {
+  "no-volume": "no volume data",
+  "short-history": "not enough price history",
+  "needs-intraday": "hourly data only",
+  "sample-only": "no live data",
+  "no-history": "no price history",
+  other: "data unavailable",
+};
+
 export default async function TopOpportunities({
   style,
   watchlist,
@@ -32,7 +42,7 @@ export default async function TopOpportunities({
   style: TradingStyle;
   watchlist: string[];
 }) {
-  const [assets, tier, supabase] = await Promise.all([
+  const [{ assets, skipped }, tier, supabase] = await Promise.all([
     getTopOpportunities(style),
     getUserTier(),
     createClient(),
@@ -143,6 +153,17 @@ export default async function TopOpportunities({
           </tbody>
         </table>
       </div>
+
+      {skipped.count > 0 && (
+        <p className="mt-2 text-xs text-slate-400 dark:text-ink-300/70">
+          {skipped.count} asset{skipped.count === 1 ? "" : "s"} skipped for this
+          combination (
+          {Object.entries(skipped.reasons)
+            .map(([code, n]) => `${SKIP_LABEL[code] ?? code}: ${n}`)
+            .join(", ")}
+          ) — we never score without the data a combination needs.
+        </p>
+      )}
 
       {!fullAccess && assets.length > FREE_ROWS && (
         <div className="mt-3 rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4 text-center">

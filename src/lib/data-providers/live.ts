@@ -53,6 +53,7 @@ function scoreOnto(
     return {
       ...base,
       unavailableReason: outcome.reason,
+      unavailableCode: outcome.code,
       spark: candles && candles.length ? sparkFrom(candles) : undefined,
     };
   }
@@ -89,6 +90,7 @@ function sampleAsset(cat: CatalogAsset, profile: ScoringProfile): Asset {
     return {
       ...base,
       unavailableReason: `${profile.name} needs live market data — only SAMPLE data is available for ${base.name} right now.`,
+      unavailableCode: "sample-only",
       spark: candles && candles.length ? sparkFrom(candles) : undefined,
     };
   }

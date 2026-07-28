@@ -23,13 +23,21 @@ export const mockProvider: DataProvider = {
       : sampleAssets;
     return list.map((asset) => {
       const candles = sampleCandles[asset.symbol] ?? null;
-      // Sample candles are daily-only, so they always score on "swing".
+      // Sample candles are daily-only. Same honesty rule as the live
+      // provider's fallback: non-Classic combinations need live data.
+      if (profile.id !== "classic") {
+        return {
+          ...asset,
+          unavailableReason: `${profile.name} needs live market data — only SAMPLE data is available for ${asset.name} right now.`,
+          unavailableCode: "sample-only",
+        };
+      }
       const outcome = scoreWithProfile(candles, "swing", profile, {
         assetName: asset.name,
         sourceLabel: "sample-data",
       });
       if (outcome.status === "unavailable") {
-        return { ...asset, unavailableReason: outcome.reason };
+        return { ...asset, unavailableReason: outcome.reason, unavailableCode: outcome.code };
       }
       const r = outcome.result;
       return {

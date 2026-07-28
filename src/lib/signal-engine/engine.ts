@@ -20,11 +20,15 @@ import type {
   ComponentResult,
   GateResult,
 } from "./profiles";
-import { checkAvailability, type AvailabilityMeta } from "./availability";
+import {
+  checkAvailability,
+  type AvailabilityMeta,
+  type AvailabilityCode,
+} from "./availability";
 
 export type ScoreOutcome =
   | { status: "scored"; result: ProfileScoreResult }
-  | { status: "unavailable"; reason: string };
+  | { status: "unavailable"; code: AvailabilityCode; reason: string };
 
 // Build the memoized indicator context a profile's components/gates read from.
 export function buildContext(candles: Candle[], style: TradingStyle): IndicatorContext {
@@ -88,7 +92,7 @@ export function scoreWithProfile(
 ): ScoreOutcome {
   // Universal rule 1: honest data first.
   const avail = checkAvailability(profile, candles, style, meta);
-  if (!avail.ok) return { status: "unavailable", reason: avail.reason };
+  if (!avail.ok) return { status: "unavailable", code: avail.code, reason: avail.reason };
   const ok = candles as Candle[];
 
   // Classic's escape hatch: delegate to the original scorer, bit for bit.
