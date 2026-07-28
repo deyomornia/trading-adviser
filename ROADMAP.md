@@ -58,6 +58,8 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
       low/2×ATR), TP1–3 at 1R/2R/3R, sized from the user's Settings defaults; only renders
       actionable on Buy Candidate (hard rule visible); "Open in Trade Plan" prefills all levels.
       Long-only; clearly labeled not-a-recommendation/not-backtested.
+- [x] Public /methodology page ("How signals work") — full scoring/verdict/setup rules + honest
+      limits; linked from signal popover, footer, and screener.
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
