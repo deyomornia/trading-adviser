@@ -14,10 +14,14 @@ export default function TradePlanForm({
   defaults,
   initialSymbol = "",
   initialEntry = "",
+  initialStop = "",
+  initialTarget = "",
 }: {
   defaults: TradePrefs;
   initialSymbol?: string;
   initialEntry?: string;
+  initialStop?: string;
+  initialTarget?: string;
 }) {
   const [symbol, setSymbol] = useState(initialSymbol);
   const [direction, setDirection] = useState<TradeDirection>("long");
@@ -25,8 +29,8 @@ export default function TradePlanForm({
   const [accountSize, setAccountSize] = useState(defaults.accountSize);
   const [riskPercent, setRiskPercent] = useState(defaults.riskPercent);
   const [entry, setEntry] = useState(initialEntry);
-  const [stopLoss, setStopLoss] = useState("");
-  const [target, setTarget] = useState("");
+  const [stopLoss, setStopLoss] = useState(initialStop);
+  const [target, setTarget] = useState(initialTarget);
   const [notes, setNotes] = useState("");
 
   const result = calculateTradePlan({

@@ -4,7 +4,13 @@ import TradePlanForm from "@/components/TradePlanForm";
 export default async function TradePlanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ symbol?: string; entry?: string; error?: string }>;
+  searchParams: Promise<{
+    symbol?: string;
+    entry?: string;
+    stop?: string;
+    target?: string;
+    error?: string;
+  }>;
 }) {
   const [prefs, sp] = await Promise.all([getTradePrefs(), searchParams]);
 
@@ -25,6 +31,8 @@ export default async function TradePlanPage({
         defaults={prefs}
         initialSymbol={sp.symbol ?? ""}
         initialEntry={sp.entry ?? ""}
+        initialStop={sp.stop ?? ""}
+        initialTarget={sp.target ?? ""}
       />
     </div>
   );

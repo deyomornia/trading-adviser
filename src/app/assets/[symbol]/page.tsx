@@ -4,11 +4,16 @@ import { notFound } from "next/navigation";
 import { dataProvider } from "@/lib/data-providers";
 import { scoreAsset, explainScore } from "@/lib/signal-engine";
 import { getTradingStyle, STYLE_CONFIG } from "@/lib/tradingStyle";
+import { buildTradeSetup } from "@/lib/trade-setup";
+import { getTradePrefs } from "@/lib/prefs";
+import { getUserTier } from "@/lib/tier";
+import { canAccess } from "@/lib/access";
 import type { SignalVerdict } from "@/types";
 import CandleChart from "@/components/CandleChart";
 import AiSummary from "@/components/AiSummary";
 import TradingStyleSelector from "@/components/TradingStyleSelector";
 import ScoreRing from "@/components/ScoreRing";
+import TradeSetupCard from "@/components/TradeSetupCard";
 
 function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -73,6 +78,11 @@ export default async function AssetDetailPage({
   const result = scoreAsset(candles, style);
   const reasons = explainScore(result);
   const up = asset.dailyChangePct >= 0;
+
+  // Suggested setup (Pro): rule-based levels from the user's own defaults.
+  const [tier, prefs] = await Promise.all([getUserTier(), getTradePrefs()]);
+  const isProSetup = canAccess(tier, "trade-setup");
+  const setup = buildTradeSetup(candles, result, prefs);
 
   return (
     <div>
@@ -201,6 +211,9 @@ export default async function AssetDetailPage({
           </Link>
         </section>
       </div>
+
+      {/* Suggested trade setup (Pro; rule-based; Buy-Candidate gated) */}
+      <TradeSetupCard asset={asset} setup={setup} prefs={prefs} isPro={isProSetup} />
     </div>
   );
 }

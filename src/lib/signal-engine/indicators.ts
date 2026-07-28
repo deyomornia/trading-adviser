@@ -51,6 +51,39 @@ export function rsi(prices: number[], period = 14): number[] {
   return result;
 }
 
+/**
+ * Wilder-smoothed Average True Range (ATR). NaN for the first <period> indexes.
+ * True range = max(high−low, |high−prevClose|, |low−prevClose|).
+ */
+export function atr(
+  highs: number[],
+  lows: number[],
+  closes: number[],
+  period = 14
+): number[] {
+  const n = closes.length;
+  const result: number[] = Array(n).fill(NaN);
+  if (n <= period) return result;
+
+  const tr = (i: number) =>
+    i === 0
+      ? highs[0] - lows[0]
+      : Math.max(
+          highs[i] - lows[i],
+          Math.abs(highs[i] - closes[i - 1]),
+          Math.abs(lows[i] - closes[i - 1])
+        );
+
+  let sum = 0;
+  for (let i = 1; i <= period; i++) sum += tr(i);
+  result[period] = sum / period;
+
+  for (let i = period + 1; i < n; i++) {
+    result[i] = (result[i - 1] * (period - 1) + tr(i)) / period;
+  }
+  return result;
+}
+
 export interface MacdOutput {
   macdLine: number[];
   signalLine: number[];
