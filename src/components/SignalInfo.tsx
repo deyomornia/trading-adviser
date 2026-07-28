@@ -76,18 +76,6 @@ export default function SignalInfo({
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const trendHint = detail
-    ? detail.emaDiffPct > 0
-      ? `Uptrend — 20-avg ${detail.emaDiffPct}% above the 50-avg`
-      : `Flat/down — 20-avg ${detail.emaDiffPct}% vs 50-avg`
-    : "";
-  const momentumHint = detail ? `RSI ${detail.rsi}` : "";
-  const macdHint = detail
-    ? detail.macdHistogram > 0
-      ? "MACD positive — momentum building"
-      : "MACD negative — momentum fading"
-    : "";
-
   return (
     <>
       <button
@@ -130,9 +118,12 @@ export default function SignalInfo({
 
               {detail && (
                 <div className="mt-3 space-y-2 border-t border-slate-100 dark:border-ink-700/60 pt-3">
-                  <Bar label="Trend" value={detail.trendPts} max={35} hint={trendHint} />
-                  <Bar label="Momentum" value={detail.momentumPts} max={35} hint={momentumHint} />
-                  <Bar label="MACD" value={detail.macdPts} max={30} hint={macdHint} />
+                  {detail.components.map((c) => (
+                    <Bar key={c.name} label={c.name} value={c.points} max={c.maxPoints} hint={c.hint} />
+                  ))}
+                  <p className="text-[11px] text-slate-400 dark:text-ink-300/70">
+                    Scored with: {detail.profileName}
+                  </p>
                 </div>
               )}
 

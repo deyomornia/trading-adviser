@@ -4,18 +4,20 @@
 
 import { aiExplainAsset } from "@/lib/ai/explain";
 import type { Asset } from "@/types";
-import type { ScoreResult } from "@/lib/signal-engine";
+import type { ProfileScoreResult } from "@/lib/signal-engine";
 
 export default async function AiSummary({
   asset,
   result,
   styleLabel,
+  logicNote,
 }: {
   asset: Asset;
-  result: ScoreResult;
+  result: ProfileScoreResult;
   styleLabel?: string;
+  logicNote?: string;
 }) {
-  const text = await aiExplainAsset(asset, result, styleLabel);
+  const text = await aiExplainAsset(asset, result, styleLabel, logicNote);
   if (!text) return null;
 
   return (

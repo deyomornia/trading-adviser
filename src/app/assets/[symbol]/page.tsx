@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { dataProvider } from "@/lib/data-providers";
-import { scoreAsset, explainScore } from "@/lib/signal-engine";
+import { scoreWithProfile, classicProfile } from "@/lib/signal-engine";
 import { getTradingStyle, STYLE_CONFIG } from "@/lib/tradingStyle";
 import { buildTradeSetup } from "@/lib/trade-setup";
 import { getTradePrefs } from "@/lib/prefs";
@@ -67,22 +67,26 @@ export default async function AssetDetailPage({
 
   const style = await getTradingStyle();
   const styleCfg = STYLE_CONFIG[style];
+  const profile = classicProfile;
   const [assets, candles] = await Promise.all([
-    dataProvider.getAssets([sym], style),
-    dataProvider.getCandles(sym, style),
+    dataProvider.getAssets([sym], style, profile),
+    dataProvider.getCandles(sym, style, profile),
   ]);
   const asset = assets.find((a) => a.symbol === sym);
 
   if (!asset || !candles) notFound();
 
-  const result = scoreAsset(candles, style);
-  const reasons = explainScore(result);
+  const outcome = scoreWithProfile(candles, style, profile, {
+    assetName: asset.name,
+  });
+  const result = outcome.status === "scored" ? outcome.result : null;
+  const reasons = result?.explanation ?? [];
   const up = asset.dailyChangePct >= 0;
 
   // Suggested setup (Pro): rule-based levels from the user's own defaults.
   const [tier, prefs] = await Promise.all([getUserTier(), getTradePrefs()]);
   const isProSetup = canAccess(tier, "trade-setup");
-  const setup = buildTradeSetup(candles, result, prefs);
+  const setup = result ? buildTradeSetup(candles, result, prefs) : null;
 
   return (
     <div>
@@ -114,12 +118,14 @@ export default async function AssetDetailPage({
           </p>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          <div className={`inline-block rounded px-3 py-1 text-sm font-medium ${signalColor(result.signal)}`}>
-            {result.signal}
+        {result && (
+          <div className="flex flex-col items-end gap-2">
+            <div className={`inline-block rounded px-3 py-1 text-sm font-medium ${signalColor(result.signal)}`}>
+              {result.signal}
+            </div>
+            <ScoreRing score={result.score} />
           </div>
-          <ScoreRing score={result.score} />
-        </div>
+        )}
       </div>
 
       {/* Trading style — the whole page (chart, score, take) uses this timeframe */}
@@ -144,14 +150,24 @@ export default async function AssetDetailPage({
         </div>
       )}
 
+      {/* When the chosen combination can't score this asset, say why — never guess */}
+      {!result && (
+        <div className="mt-6 rounded-md border border-slate-200 dark:border-ink-700 bg-slate-50 dark:bg-ink-800/50 px-4 py-3 text-sm text-slate-700 dark:text-ink-100/90">
+          <strong>No score for this combination.</strong>{" "}
+          {outcome.status === "unavailable" ? outcome.reason : ""}
+        </div>
+      )}
+
       {/* AI take — streams in without blocking the page; hidden if AI not set up */}
-      <Suspense
-        fallback={
-          <p className="mt-6 text-sm text-slate-400 dark:text-ink-300/70">Generating AI take…</p>
-        }
-      >
-        <AiSummary asset={asset} result={result} styleLabel={styleCfg.label} />
-      </Suspense>
+      {result && (
+        <Suspense
+          fallback={
+            <p className="mt-6 text-sm text-slate-400 dark:text-ink-300/70">Generating AI take…</p>
+          }
+        >
+          <AiSummary asset={asset} result={result} styleLabel={styleCfg.label} />
+        </Suspense>
+      )}
 
       {/* Chart */}
       <section className="mt-6 rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
@@ -161,59 +177,59 @@ export default async function AssetDetailPage({
         <CandleChart candles={candles} intraday={styleCfg.intraday} />
       </section>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {/* Score breakdown */}
-        <section className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
-            How the score is built
-          </h2>
-          <div className="space-y-3">
-            <ScoreBar label="Trend (EMA 20 vs 50)" value={result.breakdown.trend} max={35} />
-            <ScoreBar label="Momentum (RSI)" value={result.breakdown.momentum} max={35} />
-            <ScoreBar label="MACD" value={result.breakdown.macdScore} max={30} />
-          </div>
+      {result && (
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {/* Score breakdown — components come from the active scoring profile */}
+          <section className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
+              How the score is built
+            </h2>
+            <div className="space-y-3">
+              {result.components.map((c) => (
+                <ScoreBar key={c.key} label={c.name} value={c.points} max={c.maxPoints} />
+              ))}
+            </div>
 
-          <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-100 dark:border-ink-700/60 pt-4 text-sm">
-            <dt className="text-slate-500 dark:text-ink-300">RSI (14)</dt>
-            <dd className="text-right font-mono tabular-nums text-slate-900 dark:text-ink-100">{result.indicators.rsi}</dd>
-            <dt className="text-slate-500 dark:text-ink-300">EMA 20</dt>
-            <dd className="text-right font-mono tabular-nums text-slate-900 dark:text-ink-100">{result.indicators.ema20}</dd>
-            <dt className="text-slate-500 dark:text-ink-300">EMA 50</dt>
-            <dd className="text-right font-mono tabular-nums text-slate-900 dark:text-ink-100">{result.indicators.ema50}</dd>
-            <dt className="text-slate-500 dark:text-ink-300">EMA gap</dt>
-            <dd className="text-right font-mono tabular-nums text-slate-900 dark:text-ink-100">{result.indicators.emaDiffPct}%</dd>
-            <dt className="text-slate-500 dark:text-ink-300">Suggested stop</dt>
-            <dd className="text-right font-mono tabular-nums text-slate-900 dark:text-ink-100">
-              {formatPrice(result.stopSuggestion, asset.currency)}
-            </dd>
-          </dl>
-        </section>
+            <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-100 dark:border-ink-700/60 pt-4 text-sm">
+              {result.readings.map((r) => (
+                <div key={r.label} className="contents">
+                  <dt className="text-slate-500 dark:text-ink-300">{r.label}</dt>
+                  <dd className="text-right font-mono tabular-nums text-slate-900 dark:text-ink-100">{r.value}</dd>
+                </div>
+              ))}
+              <dt className="text-slate-500 dark:text-ink-300">Suggested stop</dt>
+              <dd className="text-right font-mono tabular-nums text-slate-900 dark:text-ink-100">
+                {formatPrice(result.stopSuggestion, asset.currency)}
+              </dd>
+            </dl>
+          </section>
 
-        {/* Plain-English explanation */}
-        <section className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
-            In plain English
-          </h2>
-          <ul className="space-y-2">
-            {reasons.map((r, i) => (
-              <li key={i} className={`rounded-md border px-3 py-2 text-sm ${toneColor(r.tone)}`}>
-                <span className="font-medium text-slate-900 dark:text-ink-100">{r.label}: </span>
-                <span className="text-slate-700 dark:text-ink-100/90">{r.text}</span>
-              </li>
-            ))}
-          </ul>
+          {/* Plain-English explanation */}
+          <section className="rounded-lg border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-950 p-4">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-ink-300">
+              In plain English
+            </h2>
+            <ul className="space-y-2">
+              {reasons.map((r, i) => (
+                <li key={i} className={`rounded-md border px-3 py-2 text-sm ${toneColor(r.tone)}`}>
+                  <span className="font-medium text-slate-900 dark:text-ink-100">{r.label}: </span>
+                  <span className="text-slate-700 dark:text-ink-100/90">{r.text}</span>
+                </li>
+              ))}
+            </ul>
 
-          <Link
-            href={`/trade-plan?symbol=${asset.symbol}&entry=${asset.price}`}
-            className="mt-4 inline-block rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
-          >
-            Plan a trade for this →
-          </Link>
-        </section>
-      </div>
+            <Link
+              href={`/trade-plan?symbol=${asset.symbol}&entry=${asset.price}`}
+              className="mt-4 inline-block rounded-md bg-slate-900 dark:bg-accent px-4 py-2 text-sm font-medium text-white dark:text-ink-950 hover:bg-slate-800 dark:hover:bg-accent/90"
+            >
+              Plan a trade for this →
+            </Link>
+          </section>
+        </div>
+      )}
 
       {/* Suggested trade setup (Pro; rule-based; Buy-Candidate gated) */}
-      <TradeSetupCard asset={asset} setup={setup} prefs={prefs} isPro={isProSetup} />
+      {setup && <TradeSetupCard asset={asset} setup={setup} prefs={prefs} isPro={isProSetup} />}
     </div>
   );
 }

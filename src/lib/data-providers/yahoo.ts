@@ -69,11 +69,12 @@ export async function fetchQuote(pair: string): Promise<LiveQuote | null> {
 
 export async function fetchCandles(
   pair: string,
-  style: TradingStyle
+  style: TradingStyle,
+  rangeOverride?: string // deeper history for profiles that need it (e.g. "2y")
 ): Promise<Candle[] | null> {
   if (!pair) return null;
   const p = STYLE_PARAMS[style];
-  const r = await fetchChart(pair, p.interval, p.range, 900);
+  const r = await fetchChart(pair, p.interval, rangeOverride ?? p.range, 900);
   const ts = r?.timestamp;
   const q = r?.indicators?.quote?.[0];
   if (!ts || !q?.close) return null;

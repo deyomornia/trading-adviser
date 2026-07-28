@@ -5,14 +5,18 @@ export type AssetType = "crypto" | "commodity";
 
 export type SignalVerdict = "Buy Candidate" | "Wait" | "Avoid";
 
-// The pieces behind a signal, for the "Why this signal?" popover.
+// The pieces behind a signal, for the "Why this signal?" popover. Dynamic:
+// each scoring profile defines its own components, so nothing here assumes
+// a fixed Trend/Momentum/MACD split.
 export interface SignalDetail {
-  trendPts: number;      // 0–35
-  momentumPts: number;   // 0–35
-  macdPts: number;       // 0–30
-  emaDiffPct: number;    // how far EMA-20 is above/below EMA-50
-  rsi: number;           // 0–100
-  macdHistogram: number; // >0 = momentum building
+  profileId: string;   // which scoring profile produced the score
+  profileName: string; // e.g. "Classic (DG Default)"
+  components: {
+    name: string;      // e.g. "Trend (EMA 20 vs 50)"
+    points: number;
+    maxPoints: number;
+    hint: string;      // one plain-English line about this component
+  }[];
 }
 
 export interface Asset {
@@ -28,6 +32,8 @@ export interface Asset {
   stopSuggestion?: number; // recent swing low for stop placement (Phase 5)
   detail?: SignalDetail;   // the parameters behind the signal (for the popover)
   spark?: number[];        // recent closes (downsampled) for the sparkline
+  profileId?: string;      // scoring profile used (when scored)
+  unavailableReason?: string; // set when the chosen profile can't score this asset
 }
 
 // Trade Journal (Phase 7). One record per trade the user logs.

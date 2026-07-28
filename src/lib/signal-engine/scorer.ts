@@ -23,7 +23,7 @@ interface TrendThresholds {
   flatFloor: number; // below this = downtrend (Avoid)
   buyGate: number;   // EMA gap needed to allow "Buy Candidate"
 }
-const TREND_THRESHOLDS: Record<TradingStyle, TrendThresholds> = {
+export const TREND_THRESHOLDS: Record<TradingStyle, TrendThresholds> = {
   day: { strong: 1.0, mild: 0.4, up: 0, flatFloor: -0.7, buyGate: 1.0 },
   swing: { strong: 3, mild: 1, up: 0, flatFloor: -2, buyGate: 3 },
   position: { strong: 6, mild: 2, up: 0, flatFloor: -3, buyGate: 6 },

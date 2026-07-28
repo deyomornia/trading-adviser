@@ -12,7 +12,7 @@
 // can be sized — the app's hard rule, made visible.
 
 import type { Candle } from "@/data/sampleCandles";
-import type { ScoreResult } from "@/lib/signal-engine";
+import type { SignalVerdict } from "@/lib/signal-engine";
 import { atr } from "@/lib/signal-engine/indicators";
 import { calculateTradePlan, type TradePlanResult } from "@/lib/risk/calculator";
 import type { TradePrefs } from "@/lib/prefs";
@@ -44,7 +44,9 @@ function roundPrice(v: number, ref: number): number {
 
 export function buildTradeSetup(
   candles: Candle[],
-  scoreResult: ScoreResult,
+  // Structural type: works with any scoring profile's result — the setup only
+  // ever depends on the verdict and the engine's universal stop suggestion.
+  scoreResult: { signal: SignalVerdict; stopSuggestion: number },
   prefs: TradePrefs
 ): TradeSetup | NoSetup {
   const closes = candles.map((c) => c.close);

@@ -9,11 +9,24 @@ import type { DataProvider } from "./provider";
 import { assetCatalog, catalogBySymbol, DEFAULT_WATCHLIST, type CatalogAsset } from "@/data/assetCatalog";
 import { sampleAssets } from "@/data/sampleAssets";
 import { sampleCandles } from "@/data/sampleCandles";
-import { scoreAsset, MIN_CANDLES } from "@/lib/signal-engine";
+import {
+  scoreWithProfile,
+  toSignalDetail,
+  classicProfile,
+  type ScoringProfile,
+} from "@/lib/signal-engine";
 import { STYLE_CONFIG, type TradingStyle } from "@/lib/tradingStyle";
 import * as binance from "./binance";
 import * as twelveData from "./twelve-data";
 import * as yahoo from "./yahoo";
+
+// Human-readable feed names for honest "not available" messages.
+const SOURCE_LABEL: Record<CatalogAsset["source"], string> = {
+  binance: "Binance",
+  twelvedata: "Twelve Data",
+  yahoo: "Yahoo Finance",
+  sample: "sample-data",
+};
 
 // Last ~40 closes, downsampled to ≤20 points, for the row sparkline.
 function sparkFrom(candles: Candle[]): number[] {
@@ -25,29 +38,40 @@ function sparkFrom(candles: Candle[]): number[] {
   return out;
 }
 
-function scoreOnto(base: Asset, candles: Candle[] | null, style: TradingStyle): Asset {
-  if (!candles || candles.length < MIN_CANDLES) return base;
-  const { score, signal, stopSuggestion, breakdown, indicators } = scoreAsset(candles, style);
+function scoreOnto(
+  base: Asset,
+  candles: Candle[] | null,
+  style: TradingStyle,
+  profile: ScoringProfile,
+  sourceLabel?: string
+): Asset {
+  const outcome = scoreWithProfile(candles, style, profile, {
+    assetName: base.name,
+    sourceLabel,
+  });
+  if (outcome.status === "unavailable") {
+    return {
+      ...base,
+      unavailableReason: outcome.reason,
+      spark: candles && candles.length ? sparkFrom(candles) : undefined,
+    };
+  }
+  const r = outcome.result;
   return {
     ...base,
-    score,
-    signal,
-    stopSuggestion,
-    detail: {
-      trendPts: breakdown.trend,
-      momentumPts: breakdown.momentum,
-      macdPts: breakdown.macdScore,
-      emaDiffPct: indicators.emaDiffPct,
-      rsi: indicators.rsi,
-      macdHistogram: indicators.macdHistogram,
-    },
-    spark: sparkFrom(candles),
+    score: r.score,
+    signal: r.signal,
+    stopSuggestion: r.stopSuggestion,
+    detail: toSignalDetail(r),
+    profileId: r.profileId,
+    spark: candles && candles.length ? sparkFrom(candles) : undefined,
   };
 }
 
-// SAMPLE fallback for one catalog asset. Sample candles are daily, so they are
-// always scored with the "swing" thresholds regardless of the selected style.
-function sampleAsset(cat: CatalogAsset): Asset {
+// SAMPLE fallback for one catalog asset. Sample candles are daily-only, so
+// they are always scored with Classic on "swing" thresholds — a non-Classic
+// profile on sample data would be dishonest, and reports unavailable instead.
+function sampleAsset(cat: CatalogAsset, profile: ScoringProfile): Asset {
   const s = sampleAssets.find((a) => a.symbol === cat.symbol);
   const base: Asset = s
     ? { ...s, isSample: true }
@@ -60,35 +84,52 @@ function sampleAsset(cat: CatalogAsset): Asset {
         currency: cat.currency,
         isSample: true,
       };
-  return scoreOnto(base, sampleCandles[cat.symbol] ?? null, "swing");
+  const candles = sampleCandles[cat.symbol] ?? null;
+  if (profile.id !== "classic") {
+    return {
+      ...base,
+      unavailableReason: `${profile.name} needs live market data — only SAMPLE data is available for ${base.name} right now.`,
+      spark: candles && candles.length ? sparkFrom(candles) : undefined,
+    };
+  }
+  return scoreOnto(base, candles, "swing", profile, SOURCE_LABEL[cat.source]);
 }
 
-async function fetchLive(cat: CatalogAsset, style: TradingStyle) {
+async function fetchLive(cat: CatalogAsset, style: TradingStyle, profile: ScoringProfile) {
   const cfg = STYLE_CONFIG[style];
+  // A profile may need deeper history than the style's default fetch
+  // (e.g. a 200-day average). Classic never sets this, so its inputs —
+  // and therefore its scores — are unchanged.
+  const limit = profile.fetch?.limit ?? cfg.limit;
+  const yahooRange = profile.fetch?.yahooRange?.[style];
   if (cat.source === "binance" && cat.pair) {
     return Promise.all([
       binance.fetchQuote(cat.pair),
-      binance.fetchCandles(cat.pair, cfg.binanceInterval, cfg.limit),
+      binance.fetchCandles(cat.pair, cfg.binanceInterval, limit),
     ]);
   }
   if (cat.source === "twelvedata" && cat.pair) {
     return Promise.all([
       twelveData.fetchQuote(cat.pair),
-      twelveData.fetchCandles(cat.pair, cfg.twelveInterval, cfg.limit),
+      twelveData.fetchCandles(cat.pair, cfg.twelveInterval, limit),
     ]);
   }
   if (cat.source === "yahoo" && cat.pair) {
-    // Yahoo maps the style to interval+range itself.
+    // Yahoo maps the style to interval+range itself (range overridable).
     return Promise.all([
       yahoo.fetchQuote(cat.pair),
-      yahoo.fetchCandles(cat.pair, style),
+      yahoo.fetchCandles(cat.pair, style, yahooRange),
     ]);
   }
   return [null, null] as const;
 }
 
-async function buildAsset(cat: CatalogAsset, style: TradingStyle): Promise<Asset> {
-  const [quote, candles] = await fetchLive(cat, style);
+async function buildAsset(
+  cat: CatalogAsset,
+  style: TradingStyle,
+  profile: ScoringProfile
+): Promise<Asset> {
+  const [quote, candles] = await fetchLive(cat, style, profile);
   if (quote && candles) {
     const live: Asset = {
       symbol: cat.symbol,
@@ -99,25 +140,33 @@ async function buildAsset(cat: CatalogAsset, style: TradingStyle): Promise<Asset
       currency: cat.currency,
       isSample: false,
     };
-    return scoreOnto(live, candles, style);
+    return scoreOnto(live, candles, style, profile, SOURCE_LABEL[cat.source]);
   }
-  return sampleAsset(cat);
+  return sampleAsset(cat, profile);
 }
 
 export const liveProvider: DataProvider = {
   name: "live",
-  async getAssets(symbols?: string[], style: TradingStyle = "swing"): Promise<Asset[]> {
+  async getAssets(
+    symbols?: string[],
+    style: TradingStyle = "swing",
+    profile: ScoringProfile = classicProfile
+  ): Promise<Asset[]> {
     const wanted = (symbols && symbols.length ? symbols : DEFAULT_WATCHLIST)
       .map(catalogBySymbol)
       .filter((c): c is CatalogAsset => Boolean(c));
     const seen = new Set<string>();
     const unique = wanted.filter((c) => (seen.has(c.symbol) ? false : seen.add(c.symbol)));
-    return Promise.all(unique.map((c) => buildAsset(c, style)));
+    return Promise.all(unique.map((c) => buildAsset(c, style, profile)));
   },
-  async getCandles(symbol: string, style: TradingStyle = "swing"): Promise<Candle[] | null> {
+  async getCandles(
+    symbol: string,
+    style: TradingStyle = "swing",
+    profile: ScoringProfile = classicProfile
+  ): Promise<Candle[] | null> {
     const cat = catalogBySymbol(symbol);
     if (!cat) return sampleCandles[symbol] ?? null;
-    const [, candles] = await fetchLive(cat, style);
+    const [, candles] = await fetchLive(cat, style, profile);
     if (candles) return candles;
     return sampleCandles[symbol] ?? null;
   },
