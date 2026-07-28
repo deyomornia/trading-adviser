@@ -21,6 +21,12 @@ doing them. Work in small steps. Prefer simple, working code over clever code.
 - All non-live data must be clearly labelled **SAMPLE**. Never present sample data as real.
 - Use calm, non-promissory language in the UI ("may", "suggests", "wait for
   confirmation") — never "guaranteed", "sure buy", "moonshot".
+- **Keep published parameters in sync:** whenever signal-engine or trade-setup
+  parameters change (`src/lib/signal-engine/scorer.ts`, `src/lib/trade-setup.ts`,
+  data-refresh cadences), update every user-facing text that states those
+  numbers **in the same change** — especially `src/app/methodology/page.tsx`,
+  the SignalInfo popover, the TradeSetupCard notes, and the freshness notes in
+  banners/tooltips. The app promises "nothing is hidden"; stale docs break that.
 
 ## Hard rules
 - A "Buy Candidate" signal is only allowed with a clear stop-loss, acceptable
