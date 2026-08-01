@@ -1,7 +1,13 @@
 export { scoreAsset, explainScore, MIN_CANDLES, TREND_THRESHOLDS } from "./scorer";
 export type { ScoreResult, SignalVerdict, ExplanationPoint } from "./scorer";
 
-export { scoreWithProfile, buildContext } from "./engine";
+export {
+  scoreWithProfile,
+  buildContext,
+  BUY_SCORE_MIN,
+  AVOID_SCORE_BELOW,
+  STOP_LOOKBACK,
+} from "./engine";
 export type { ScoreOutcome } from "./engine";
 
 export {

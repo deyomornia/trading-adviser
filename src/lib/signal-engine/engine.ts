@@ -30,6 +30,13 @@ export type ScoreOutcome =
   | { status: "scored"; result: ProfileScoreResult }
   | { status: "unavailable"; code: AvailabilityCode; reason: string };
 
+// Universal verdict bands — same values the original scorer uses. Exported so
+// user-facing docs (methodology page) read them instead of hand-copying.
+export const BUY_SCORE_MIN = 65;
+export const AVOID_SCORE_BELOW = 40;
+// The engine's stop rule: lowest low of this many recent candles.
+export const STOP_LOOKBACK = 20;
+
 // Build the memoized indicator context a profile's components/gates read from.
 export function buildContext(candles: Candle[], style: TradingStyle): IndicatorContext {
   const closes = candles.map((c) => c.close);
@@ -62,7 +69,7 @@ export function buildContext(candles: Candle[], style: TradingStyle): IndicatorC
 // Engine-owned stop suggestion: lowest low of the last 20 candles (recent
 // support). Identical to the original scorer's rule.
 function stopFromCandles(lows: number[]): number {
-  const recentLows = lows.slice(-20).filter((l) => Number.isFinite(l) && l > 0);
+  const recentLows = lows.slice(-STOP_LOOKBACK).filter((l) => Number.isFinite(l) && l > 0);
   return recentLows.length ? +Math.min(...recentLows).toFixed(2) : 0;
 }
 
@@ -136,9 +143,9 @@ export function scoreWithProfile(
 
   // Universal rule 3: the verdict bands.
   let signal: SignalVerdict;
-  if (score >= 65 && buyGates.every((g) => g.passed)) {
+  if (score >= BUY_SCORE_MIN && buyGates.every((g) => g.passed)) {
     signal = "Buy Candidate";
-  } else if (score < 40 || avoidsFired.length > 0) {
+  } else if (score < AVOID_SCORE_BELOW || avoidsFired.length > 0) {
     signal = "Avoid";
   } else {
     signal = "Wait";
