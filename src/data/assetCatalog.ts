@@ -18,7 +18,11 @@ export interface CatalogAsset {
 }
 
 // Crypto — all live via Binance's public API (no key needed).
-// Every pair below is verified to exist as <SYMBOL>USDT on Binance.
+// Every pair below is verified to exist as <SYMBOL>USDT on Binance with real
+// volume (checked 2026-08-01 against exchangeInfo + klines). Coverage: every
+// CoinGecko top-150 coin that trades as a Binance USDT spot pair, excluding
+// stablecoins and wrapped/staked duplicates. Note: TON was rebranded/migrated
+// to GRAM (TONUSDT no longer trades — same treatment as MATIC→POL).
 const CRYPTO: CatalogAsset[] = [
   ["BTC", "Bitcoin"], ["ETH", "Ethereum"], ["SOL", "Solana"], ["BNB", "BNB"],
   ["XRP", "XRP"], ["ADA", "Cardano"], ["DOGE", "Dogecoin"], ["AVAX", "Avalanche"],
@@ -28,11 +32,23 @@ const CRYPTO: CatalogAsset[] = [
   ["ALGO", "Algorand"], ["VET", "VeChain"], ["ICP", "Internet Computer"],
   ["SAND", "The Sandbox"], ["AAVE", "Aave"],
   ["SHIB", "Shiba Inu"], ["PEPE", "Pepe"], ["ARB", "Arbitrum"], ["OP", "Optimism"],
-  ["APT", "Aptos"], ["SUI", "Sui"], ["INJ", "Injective"], ["TON", "Toncoin"],
+  ["APT", "Aptos"], ["SUI", "Sui"], ["INJ", "Injective"], ["GRAM", "Gram (prev. Toncoin)"],
   ["HBAR", "Hedera"], ["RENDER", "Render"], ["TAO", "Bittensor"], ["FET", "Fetch.ai"],
   ["GRT", "The Graph"], ["IMX", "Immutable"], ["LDO", "Lido DAO"], ["STX", "Stacks"],
   ["RUNE", "THORChain"], ["EGLD", "MultiversX"], ["THETA", "Theta Network"],
   ["XTZ", "Tezos"], ["GALA", "Gala"],
+  // Catalog expansion (2026-08-01): remaining top-150 coins tradable on Binance.
+  ["ZEC", "Zcash"], ["BCH", "Bitcoin Cash"], ["ONDO", "Ondo"],
+  ["WLFI", "World Liberty Financial"], ["ASTER", "Aster"], ["SKY", "Sky"],
+  ["MORPHO", "Morpho"], ["WLD", "Worldcoin"], ["QNT", "Quant"],
+  ["PUMP", "Pump.fun"], ["JST", "JUST"], ["ENA", "Ethena"], ["NEXO", "Nexo"],
+  ["JUP", "Jupiter"], ["CAKE", "PancakeSwap"], ["DASH", "Dash"],
+  ["ETHFI", "Ether.fi"], ["AERO", "Aerodrome Finance"], ["PENGU", "Pudgy Penguins"],
+  ["VIRTUAL", "Virtuals Protocol"], ["TRUMP", "Official Trump"], ["SUN", "Sun Token"],
+  ["NIGHT", "Midnight"], ["CRV", "Curve DAO"], ["TIA", "Celestia"],
+  ["PYTH", "Pyth Network"], ["SEI", "Sei"], ["KAITO", "Kaito"], ["GNO", "Gnosis"],
+  ["LUNC", "Terra Luna Classic"], ["BONK", "Bonk"], ["ZRO", "LayerZero"],
+  ["JTO", "Jito"], ["PENDLE", "Pendle"], ["DCR", "Decred"],
 ].map(([symbol, name]) => ({
   symbol,
   name,

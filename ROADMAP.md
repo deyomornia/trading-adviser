@@ -70,6 +70,10 @@ _Last updated: Scoring profiles shipped (2026-08-01). Claude Code: update this f
       overlays; profile-aware AI takes; /methodology generated from the registry. Test suite
       added (Vitest, 94 unit + 16 live-gated tests) with a permanent Classic-identity guard —
       Classic's scores are byte-identical to the pre-refactor engine.
+- [x] Coin catalog expanded 45 → 80 (2026-08-01): every CoinGecko top-150 coin tradable as a
+      Binance USDT spot pair (stablecoins + wrapped duplicates excluded; all pairs verified to
+      serve klines with real volume). TON migrated to GRAM (TONUSDT delisted — was silently
+      falling back to SAMPLE). Screener now scans ~85 live assets; verified fast.
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
