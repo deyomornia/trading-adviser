@@ -2,13 +2,12 @@
 // Returns the symbols the user has chosen (oldest first), or [] if none/logged out.
 
 import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/user";
 
 export async function getWatchlistSymbols(): Promise<string[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return [];
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("watchlist")

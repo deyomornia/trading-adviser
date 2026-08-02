@@ -9,7 +9,7 @@ import Link from "next/link";
 import { getTopOpportunities, SCREENER_LIMIT } from "@/lib/screener";
 import { getUserTier } from "@/lib/tier";
 import { canAccess } from "@/lib/access";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/user";
 import { addToWatchlist } from "@/app/watchlist/actions";
 import { STYLE_CONFIG, type TradingStyle } from "@/lib/tradingStyle";
 import type { ScoringProfile } from "@/lib/signal-engine";
@@ -45,14 +45,11 @@ export default async function TopOpportunities({
   profile: ScoringProfile;
   watchlist: string[];
 }) {
-  const [{ assets, skipped }, tier, supabase] = await Promise.all([
+  const [{ assets, skipped }, tier, user] = await Promise.all([
     getTopOpportunities(style, profile),
     getUserTier(),
-    createClient(),
+    getAuthUser(),
   ]);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   // Nothing scored live (e.g. offline/mock mode) — hide the section honestly.
   if (assets.length === 0) return null;
