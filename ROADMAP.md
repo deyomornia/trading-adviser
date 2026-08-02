@@ -1,5 +1,5 @@
 # Trading Adviser — Roadmap & Status
-_Last updated: Phase B complete (2026-07-18). Claude Code: update this file as steps complete._
+_Last updated: Scoring profiles shipped (2026-08-01). Claude Code: update this file as steps complete._
 
 ## ✅ Done
 - [x] Phase 1 — Next.js project, navigation, 6 pages, permanent disclaimer
@@ -60,6 +60,16 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
       Long-only; clearly labeled not-a-recommendation/not-backtested.
 - [x] Public /methodology page ("How signals work") — full scoring/verdict/setup rules + honest
       limits; linked from signal popover, footer, and screener.
+- [x] Selectable indicator combinations ("scoring profiles", 2026-08-01) — engine refactored to a
+      profile registry (single source of truth: `src/lib/signal-engine/profiles.ts`); 10 profiles
+      (Classic default + 9 new: EMA+RSI day, VWAP+Bollinger, MACD+RSI, EMA 20/50, MACD+ADX,
+      RSI(2) Pullback, 40-week Trend Filter, Golden Cross, MA Distance); new indicators
+      (SMA/ADX/VWAP/Bollinger/ROC); universal rules enforced in the engine; availability guard
+      (never scores missing volume/history — verified per provider); per-style picker with
+      cookie memory; free = Classic + 1 extra per style, Pro = all ("profiles-all"); chart
+      overlays; profile-aware AI takes; /methodology generated from the registry. Test suite
+      added (Vitest, 94 unit + 16 live-gated tests) with a permanent Classic-identity guard —
+      Classic's scores are byte-identical to the pre-refactor engine.
 
 ## ▶️ Recommended next
 - [ ] Binance auto-sync (agreed next feature) — let Deo connect Binance with a READ-ONLY API key
@@ -73,7 +83,11 @@ _Last updated: Phase B complete (2026-07-18). Claude Code: update this file as s
 ## ⬜ Later
 - [ ] Go-live payments: PayMongo LIVE keys + webhook on the deployed URL (needs PayMongo
       business approval); switch Supabase email confirmation back ON.
-- [ ] Phase 10 — AI plain-English explanations (needs Claude API key)
+- [ ] Scoring-profile follow-ups: `user_prefs` table so combination choices roam across
+      devices (cookie-only today); oscillator sub-panes on the chart (RSI/ADX/MACD lines);
+      backtesting the profiles against history (would upgrade the honesty story).
+- [ ] Fix pre-existing quirk: SAMPLE-only assets score with the selected style on the
+      detail page but as Swing in the tables (kept as-is for the identity guarantee).
 
 ## Notes
 - v1 scope = crypto + commodities only. PSE stocks deferred (no clean free API).
