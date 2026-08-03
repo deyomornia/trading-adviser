@@ -7,6 +7,26 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+
+  // Security headers on every response. HSTS is already set by Vercel.
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          // No other site may embed this app in a frame (clickjacking).
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+          // Never MIME-sniff responses into executable types.
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Don't leak full URLs (with query params) to external sites.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // This app never needs camera/mic/geolocation.
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

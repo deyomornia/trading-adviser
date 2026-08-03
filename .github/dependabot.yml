@@ -1,0 +1,12 @@
+# Keep dependencies patched automatically. Security updates arrive as PRs;
+# npm run build + npm test must pass before merging any of them.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
