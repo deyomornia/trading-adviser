@@ -38,6 +38,23 @@ export interface NoSetup {
   reasons: string[];
 }
 
+// A patient limit-order entry below the current price, with the full setup
+// recomputed from its fill price.
+export interface LimitEntry {
+  key: "shallow" | "deeper";
+  label: string;
+  basis: string; // plain-English rule behind the level
+  entry: number;
+  belowMarketPct: number; // how far below the market entry (positive number)
+  setup: TradeSetup;
+}
+
+export interface EntryPlan {
+  market: TradeSetup | NoSetup; // entry at the latest price (current behavior)
+  limits: LimitEntry[]; // patient alternatives (empty when market is ineligible)
+  skipped: { label: string; reason: string }[]; // levels dropped for honesty
+}
+
 function roundPrice(v: number, ref: number): number {
   return +v.toFixed(ref < 1 ? 6 : 2);
 }
@@ -47,12 +64,16 @@ export function buildTradeSetup(
   // Structural type: works with any scoring profile's result — the setup only
   // ever depends on the verdict and the engine's universal stop suggestion.
   scoreResult: { signal: SignalVerdict; stopSuggestion: number },
-  prefs: TradePrefs
+  prefs: TradePrefs,
+  // entryOverride: price a LIMIT order would fill at (defaults to the latest
+  // close = market entry). All levels derive from the entry, so the same
+  // published rules stay true at the override price.
+  opts: { entryOverride?: number } = {}
 ): TradeSetup | NoSetup {
   const closes = candles.map((c) => c.close);
   const highs = candles.map((c) => c.high);
   const lows = candles.map((c) => c.low);
-  const entry = closes[closes.length - 1];
+  const entry = opts.entryOverride ?? closes[closes.length - 1];
 
   const atrArr = atr(highs, lows, closes, 14);
   const a = atrArr[atrArr.length - 1];
@@ -137,4 +158,73 @@ export function buildTradeSetup(
     atrValue: roundPrice(a, entry),
     plan,
   };
+}
+
+// Entry price plan: the market entry PLUS patient limit-order levels below it.
+//   Shallow pullback = market − 0.5×ATR   (waits for a small dip)
+//   Deeper pullback  = market − 1.0×ATR   (waits for a real dip)
+// Honesty rules: a level at or below the recent swing low is dropped — a dip
+// that deep would break the very structure the Buy Candidate rests on. Each
+// kept level gets the full setup recomputed from its fill price, so SL1/SL2,
+// the 1R/2R/3R ladder, and sizing all stay true to the published rules.
+export function buildEntryPlan(
+  candles: Candle[],
+  scoreResult: { signal: SignalVerdict; stopSuggestion: number },
+  prefs: TradePrefs
+): EntryPlan {
+  const market = buildTradeSetup(candles, scoreResult, prefs);
+  if (!market.eligible) return { market, limits: [], skipped: [] };
+
+  const closes = candles.map((c) => c.close);
+  const highs = candles.map((c) => c.high);
+  const lows = candles.map((c) => c.low);
+  const atrArr = atr(highs, lows, closes, 14);
+  const a = atrArr[atrArr.length - 1];
+  const marketEntry = closes[closes.length - 1];
+  const swing = scoreResult.stopSuggestion;
+
+  const limits: LimitEntry[] = [];
+  const skipped: EntryPlan["skipped"] = [];
+
+  const candidates: { key: LimitEntry["key"]; label: string; basis: string; mult: number }[] = [
+    {
+      key: "shallow",
+      label: "Shallow pullback",
+      basis: "0.5× recent volatility (ATR-14) below the current price",
+      mult: 0.5,
+    },
+    {
+      key: "deeper",
+      label: "Deeper pullback",
+      basis: "1× recent volatility (ATR-14) below the current price",
+      mult: 1.0,
+    },
+  ];
+
+  for (const cand of candidates) {
+    const entry = roundPrice(marketEntry - cand.mult * a, marketEntry);
+    if (!(entry > 0) || (swing > 0 && entry <= swing)) {
+      skipped.push({
+        label: cand.label,
+        reason:
+          "This level sits at or below the recent swing low — a pullback that deep would break the support this signal rests on, so no limit order is suggested there.",
+      });
+      continue;
+    }
+    const setup = buildTradeSetup(candles, scoreResult, prefs, { entryOverride: entry });
+    if (!setup.eligible) {
+      skipped.push({ label: cand.label, reason: setup.reasons[0] ?? "Setup not computable at this level." });
+      continue;
+    }
+    limits.push({
+      key: cand.key,
+      label: cand.label,
+      basis: cand.basis,
+      entry,
+      belowMarketPct: +(((marketEntry - entry) / marketEntry) * 100).toFixed(2),
+      setup,
+    });
+  }
+
+  return { market, limits, skipped };
 }

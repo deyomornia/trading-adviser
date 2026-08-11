@@ -6,7 +6,7 @@ import { scoreWithProfile, buildContext, type OverlaySeries } from "@/lib/signal
 import { getTradingStyle, STYLE_CONFIG } from "@/lib/tradingStyle";
 import { getScoringSelection } from "@/lib/scoringProfile";
 import { setScoringProfile } from "@/app/actions/scoringProfile";
-import { buildTradeSetup } from "@/lib/trade-setup";
+import { buildEntryPlan } from "@/lib/trade-setup";
 import { getTradePrefs } from "@/lib/prefs";
 import { getUserTier } from "@/lib/tier";
 import { canAccess } from "@/lib/access";
@@ -105,7 +105,7 @@ export default async function AssetDetailPage({
   // Suggested setup (Pro): rule-based levels from the user's own defaults.
   const [tier, prefs] = await Promise.all([getUserTier(), getTradePrefs()]);
   const isProSetup = canAccess(tier, "trade-setup");
-  const setup = result ? buildTradeSetup(candles, result, prefs) : null;
+  const entryPlan = result ? buildEntryPlan(candles, result, prefs) : null;
 
   return (
     <div>
@@ -278,7 +278,16 @@ export default async function AssetDetailPage({
       )}
 
       {/* Suggested trade setup (Pro; rule-based; Buy-Candidate gated) */}
-      {setup && <TradeSetupCard asset={asset} setup={setup} prefs={prefs} isPro={isProSetup} />}
+      {entryPlan && (
+        <TradeSetupCard
+          asset={asset}
+          setup={entryPlan.market}
+          limits={entryPlan.limits}
+          skippedLimits={entryPlan.skipped}
+          prefs={prefs}
+          isPro={isProSetup}
+        />
+      )}
     </div>
   );
 }

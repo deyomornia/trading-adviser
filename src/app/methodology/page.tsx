@@ -245,6 +245,18 @@ export default function MethodologyPage() {
         Buy Candidate. Long setups only, and nothing is ever placed
         automatically.
       </p>
+      <p className={p}>
+        The setup also suggests two <strong>patient limit-order entries</strong>{" "}
+        below the market price: a shallow pullback at 0.5× ATR below and a
+        deeper one at 1× ATR below, each with stops, targets, and size
+        recomputed from that fill price under the same rules. A level at or
+        below the recent swing low is never suggested — a dip that deep would
+        break the support the signal rests on. Honest caveat: a limit order
+        only fills if price actually pulls back; if the move runs on without a
+        dip, the order stays unfilled, and if price breaks below the stop
+        level first, the setup is invalidated and the order should be
+        cancelled.
+      </p>
 
       <h2 className={h2}>5. Honest limits</h2>
       <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-slate-600 dark:text-ink-300">
