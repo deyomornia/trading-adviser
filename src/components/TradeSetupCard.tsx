@@ -199,13 +199,15 @@ export default function TradeSetupCard({
 
           {limits.length > 0 && (
             <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[520px] text-sm">
+              <table className="w-full min-w-[640px] text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-ink-700/60 text-left text-xs text-slate-400 dark:text-ink-300/70">
                     <th className="py-1.5 pr-3 font-medium">Limit order</th>
                     <th className="py-1.5 pr-3 font-medium">Entry</th>
                     <th className="py-1.5 pr-3 font-medium">Stop 1</th>
+                    <th className="py-1.5 pr-3 font-medium">Target 1 (1R)</th>
                     <th className="py-1.5 pr-3 font-medium">Target 2 (2R)</th>
+                    <th className="py-1.5 pr-3 font-medium">Target 3 (3R)</th>
                     <th className="py-1.5 pr-3 font-medium">Size</th>
                     <th className="py-1.5 font-medium"></th>
                   </tr>
@@ -230,7 +232,13 @@ export default function TradeSetupCard({
                         {fmt(l.setup.sl1, c)}
                       </td>
                       <td className="py-2 pr-3 font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {fmt(l.setup.tp1, c)}
+                      </td>
+                      <td className="py-2 pr-3 font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
                         {fmt(l.setup.tp2, c)}
+                      </td>
+                      <td className="py-2 pr-3 font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {fmt(l.setup.tp3, c)}
                       </td>
                       <td className="py-2 pr-3 font-mono tabular-nums text-slate-700 dark:text-ink-100/90">
                         {l.setup.plan.positionSize?.toLocaleString(undefined, {
